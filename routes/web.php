@@ -15,7 +15,7 @@ use App\Http\Controllers\VoteController;
 */
 Route::get('/', [WelcomeController::class, 'home'])->name('welcome.home');
 Route::get('/vote/register', [VoteController::class, 'register'])->name('vote.register');
-Route::post('/vote/register', [VoteController::class, 'postRegister'])->name('vote.register');
+Route::post('/vote/register', [VoteController::class, 'postRegister'])->name('vote.registerPost');
 Route::get('/vote/{code}', [VoteController::class, 'vote'])->name('vote.vote');
 Route::post('/vote/{code}', [VoteController::class, 'postVote'])->name('vote.postVote');
 Route::get('/voting/result', [VoteController::class, 'result'])->name('vote.result');
