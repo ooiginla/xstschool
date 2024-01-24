@@ -22,5 +22,3 @@ Route::get('/vote/{code}', [VoteController::class, 'vote'])->name('vote.vote');
 Route::post('/vote/{code}', [VoteController::class, 'postVote'])->name('vote.postVote');
 Route::get('/voting/result', [VoteController::class, 'result'])->name('vote.result');
 Route::get('/test/email', [WelcomeController::class, 'testEmail'])->name('welcome.testEmail');
-
-Mail::to($request->user())->send(new OrderShipped($order));
