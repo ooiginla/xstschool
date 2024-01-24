@@ -79,7 +79,7 @@
                 <div class="area-bottom">
                     <div id="time" class="pull-left animated slideInLeft"></div>
                     <!-- vote.register -->
-                    <a href="{{ route('welcome.registration') }}" class="bnt bnt-theme join-now pull-right animated fadeIn">Register Now</a>
+                    <a href="{{ route('welcome.getRegistration') }}" class="bnt bnt-theme join-now pull-right animated fadeIn">Register Now</a>
                 </div>
                 
             </div>

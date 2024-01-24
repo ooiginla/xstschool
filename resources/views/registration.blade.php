@@ -47,7 +47,7 @@
                     <h1>ELECTION REGISTRATION FORM</h1>
                 </div>
                 <div>
-                    <form method="post" action="{{ route('welcome.registration') }}">
+                    <form method="post" action="{{ route('welcome.postRegistration') }}">
                         @csrf
 
                     @if($errors->any())
@@ -56,7 +56,7 @@
                         </div>
                     @endif
 
-                    @if(!session()->has('smsg'))
+                    @if(session()->has('smsg'))
                         <div class="alert alert-success" role="alert">
                             <h4 style="color: green; padding: 5px">{{  session()->get('smsg') }}</h4><br />
                         </div>
