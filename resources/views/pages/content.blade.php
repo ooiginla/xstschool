@@ -64,19 +64,22 @@
                                 <span class="icon map-icon"></span>
                                 <span class="text-place text-light animated fadeInRight">Online.</span>
                             </span>
+                            <br /><br />
+                            <h4 style="color:blue">Dear All, <br /><br />Please note that only members who register on this platform are eligible to vote on the election day and registration closes on the 28th of January, 2024.</h4>
                         </div>
                         <div class="col-sm-2 col-xs-3">
                             <div class="area-calendar calendar animated slideInRight">
-                                <span class="day text-bold">31</span>
-                                <span class="month text-light">DEC</span>
-                                <span class="year text-light bg-year">2023</span>
+                                <span class="day text-bold">28</span>
+                                <span class="month text-light">JAN</span>
+                                <span class="year text-light bg-year">2024</span>
                             </div>
                         </div>
                     </div>
                 </div>
                 <div class="area-bottom">
                     <div id="time" class="pull-left animated slideInLeft"></div>
-                    <a href="{{ route('vote.register') }}" class="bnt bnt-theme join-now pull-right animated fadeIn">Register Now</a>
+                    <!-- vote.register -->
+                    <a href="{{ route('welcome.registration') }}" class="bnt bnt-theme join-now pull-right animated fadeIn">Register Now</a>
                 </div>
                 
             </div>

@@ -11,7 +11,7 @@ class VoteController extends Controller
 {
     public function register(Request $request)
     {
-        return view('voteregister', );
+        return view('voteregister',);
     }
 
     public function postregister(Request $request)

@@ -43,11 +43,11 @@
 <script>
     jQuery(document).ready(function () {
         $('#time').syotimer({
-            year: 2023,
-            month: 12,
-            day: 31,
-            hour: 7,
-            minute: 7,
+            year: 2024,
+            month: 1,
+            day: 28,
+            hour: 24,
+            minute: 59,
         });
     });
 </script>
