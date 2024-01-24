@@ -1,0 +1,1 @@
+This is testing emails whether it delivers for  - {{ $user->firstname }}

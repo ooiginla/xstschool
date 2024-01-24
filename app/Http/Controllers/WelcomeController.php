@@ -4,9 +4,20 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\UserRegistered;
 
 class WelcomeController extends Controller
 {
+
+    public function testEmail(Request $request)
+    {
+        Mail::to('iginla.omotayo@gmail.com')->send(new UserRegistered(User::find(1)));
+        Mail::to('hi@jekayode.com')->send(new UserRegistered(User::find(1)));
+
+        dd('mail sent');
+    }
+    
     public function home(Request $request)
     {
         return view('home');
