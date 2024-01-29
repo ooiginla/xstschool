@@ -53,9 +53,9 @@ class ScreeningController extends Controller
             $sms->sendMessage($user->phone, $message);
 
             // Send Email
-            /*
+            
             Mail::to($user->email)->send(new UserRegistered($user));
-            */
+            
 
             session()->flash('smsg', $user->firstname . ' '.$user->lastname .' has been successfully ' .$status_msg);
 
@@ -68,9 +68,9 @@ class ScreeningController extends Controller
 
             
             // Send Email
-            /*
+            
             Mail::to($user->email)->send(new UserRegistered($user));
-            */
+            
 
             session()->flash('emsg', $user->firstname . ' '.$user->lastname .' has been ' .$status_msg);
         }
