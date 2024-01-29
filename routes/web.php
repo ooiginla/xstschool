@@ -3,6 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\VoteController;
+use App\Http\Controllers\ScreeningController;
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -22,3 +23,7 @@ Route::get('/vote/{code}', [VoteController::class, 'vote'])->name('vote.vote');
 Route::post('/vote/{code}', [VoteController::class, 'postVote'])->name('vote.postVote');
 Route::get('/voting/result', [VoteController::class, 'result'])->name('vote.result');
 Route::get('/test/email', [WelcomeController::class, 'testEmail'])->name('welcome.testEmail');
+
+Route::get('/screening/list', [ScreeningController::class, 'getGeneralList'])->name('screen.getGeneralList');
+Route::get('/screen/members', [ScreeningController::class, 'getList'])->name('screen.getList');
+Route::post('/screen/members', [ScreeningController::class, 'postList'])->name('screen.postList');

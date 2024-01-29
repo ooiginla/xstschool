@@ -22,7 +22,7 @@
                             <div class="area-top">
                                 <div class="top-section animated lightSpeedIn">
                                     <h5 class="heading-light">UPCOMING EVENT</h5>
-                                    <span class="dates text-white text-uppercase">DECEMBER 31, 2023</span>
+                                    <span class="dates text-white text-uppercase">FEBRUARY 3, 2024</span>
                                 </div>
                                 <h2 class="heading-bold animated rollIn">2023 ANNUAL EXECUTIVE ELECTIONS</h2>
                             <span class="animated fadeIn">

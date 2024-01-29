@@ -22,9 +22,9 @@
                             <div class="area-top">
                                 <div class="top-section animated lightSpeedIn">
                                     <h5 class="heading-light">UPCOMING EVENT</h5>
-                                    <span class="dates text-white text-uppercase">DECEMBER 31, 2023</span>
+                                    <span class="dates text-white text-uppercase">FEBRUARY 3, 2024</span>
                                 </div>
-                                <h2 class="heading-bold animated rollIn">2023 ANNUAL EXECUTIVE ELECTIONS</h2>
+                                <h2 class="heading-bold animated rollIn">2024 ANNUAL EXECUTIVE ELECTIONS</h2>
                             <span class="animated fadeIn">
                                 <span class="icon map-icon"></span>
                                 <span class="text-place text-white">Website Online</span>
@@ -44,9 +44,11 @@
         <div class="event-calendar">
             <div class="container">
                 <div class="top-section text-center">
-                    <h1>ELECTION REGISTRATION FORM</h1>
+                    <h1>ELECTION REGISTRATION CLOSED</h1>
                 </div>
                 <div>
+                    
+                    <!--
                     <form method="post" action="{{ route('welcome.postRegistration') }}">
                         @csrf
 
@@ -127,7 +129,7 @@
                             <div class="col-md-6">
                                     <select name ="gender" class="form-control">
                                         <option value="male">Male</option>
-                                        <option value="feamle">Female</option>
+                                        <option value="female">Female</option>
                                     </select>
                             </div>
                         </div>
@@ -156,6 +158,7 @@
                         </div>
 
                     </form>
+-->
                  </div>
             </div>
         </div>

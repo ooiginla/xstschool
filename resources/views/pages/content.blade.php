@@ -65,7 +65,7 @@
                                 <span class="text-place text-light animated fadeInRight">Online.</span>
                             </span>
                             <br /><br />
-                            <h4 style="color:blue">Dear All, <br /><br />Please note that only members who register on this platform are eligible to vote on the election day and registration closes on the 28th of January, 2024.</h4>
+                            <h4 style="color:blue">Dear All, <br /><br />Please note that registration for the election has closed. Click Below to check is you have been validated</h4>
                         </div>
                         <div class="col-sm-2 col-xs-3">
                             <div class="area-calendar calendar animated slideInRight">
@@ -79,7 +79,7 @@
                 <div class="area-bottom">
                     <div id="time" class="pull-left animated slideInLeft"></div>
                     <!-- vote.register -->
-                    <a href="{{ route('welcome.getRegistration') }}" class="bnt bnt-theme join-now pull-right animated fadeIn">Register Now</a>
+                    <a href="{{ route('screen.getGeneralList') }}" class="bnt bnt-theme join-now pull-right animated fadeIn">SCREENING LIST</a>
                 </div>
                 
             </div>
