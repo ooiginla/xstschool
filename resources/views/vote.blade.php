@@ -57,7 +57,7 @@
                     <h4>98/04 VOTING FORM</h4>
                 </div>
                 <div>
-                    <form method="post" action="">
+                    <form method="post" action="{{ route('vote.postVote', $user->code) }}">
 
                     <div class="row">
 
@@ -103,9 +103,9 @@
                                 
                                 <li>
                                     <div class="form-check bb bbl" style="font-size: 20px">
-                                        <input class="form-check-input" type="radio" name="vicechairman" id="bimbo" value="bimbo">
-                                        <label class="form-check-label" for="bimbo">
-                                            OLOWOMEYE ABIMBOLA 
+                                        <input class="form-check-input" type="radio" name="vicechairman" id="simbiat" value="simbiat">
+                                        <label class="form-check-label" for="simbiat">
+                                           KAREEM SIMBIAT
                                         </label>
                                     </div>
                                 </li>
@@ -151,15 +151,6 @@
                             <ul>
                                 <h1 class="blue">5. PUBLIC RELATIONS OFFICER (P.R.O)</h1>
                                 <br />
-                                
-                                <li>
-                                    <div class="form-check bb bbl" style="font-size: 20px">
-                                        <input class="form-check-input" type="radio" name="pro" id="ayodeji" value="ayodeji">
-                                        <label class="form-check-label" for="ayodeji">
-                                            AYODEJI DARAMOLA 
-                                        </label>
-                                    </div>
-                                </li>
 
                                 <li>
                                     <div class="form-check bb bbl" style="font-size: 20px">

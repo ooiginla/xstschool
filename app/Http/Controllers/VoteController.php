@@ -24,6 +24,7 @@ class VoteController extends Controller
 
         $user = User::where('code',$uniquecode)->first();
 
+
         // Check User Exist
         if(empty($user)){
             return redirect()->back()->withErrors(['msg' => 'Invalid Code, If you try 3 more times, your IP will be blocked']);
@@ -91,7 +92,7 @@ class VoteController extends Controller
         $vote->welfare = $data['welfare'] ?? NULL;
         $vote->save();
 
-        return redirect()->route('vote.register')->with('smsg', 'Vote Successfully Casted, Thank you!!!');
+        return redirect()->route('vote.result')->with('smsg', 'Vote Successfully Casted, Thank you!!!');
     }
 
     public function result(Request $request)

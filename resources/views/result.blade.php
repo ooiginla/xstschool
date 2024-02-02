@@ -49,95 +49,118 @@
             </div>
         </div>
         <!--end upcoming event-->
-
+ 
         <!--begin event calendar-->
         <div class="event-calendar">
             <div class="container">
                 <div class="top-section text-center">
-                    <h4>98/04 VOTING RESULT</h4>
+                    <h4>98/04 VOTING RESULT BOARD</h4>
                 </div>
-            <div>
 
-            <div class="row">
-                <ul>
-                    <h1 class="blue bb">1. CHAIR-PERSON</h1>
+                <table class="table table-primary">
+                    <!-- PRESIDENT -->
+                    <tr>
+                        <th colspan="2" style="text-align: center; font-weight: bold; font-size: 15px" class="text-primary">CHAIRMAN</th>
+                    <tr>
+                    <tr class="text-danger">
+                        <th>Candidates</th>
+                        <th>Votes</th>
+                    </tr>
                     @foreach($chairman as $cm)
-                        <li class="bbl bb" style="font-size: 20px"> {{ strtoupper($cm['chairman'] ." - ". $cm['total']) }}</li>
+                        <tr>
+                            <td>{{ strtoupper($cm['chairman']) }}</td>
+                            <td>{{ $cm['total'] }}<td>
+                        </tr>
                     @endforeach
-                </ul>
-            </div>
 
-            <div class="row">
-                <ul>
-                    <h1 class="blue bb">2. VICE CHAIR-PERSON</h1>
+                    <!-- VICE -->
+                    <tr>
+                        <th colspan="2" style="text-align: center; font-weight: bold; font-size: 15px" class="text-primary">VICE CHAIRMAN</th>
+                    <tr>
                     @foreach($vicechairman as $cm1)
-                        <li class="bbl bb" style="font-size: 20px"> {{ strtoupper($cm1['vicechairman'] ." - ". $cm1['total']) }}</li>
+                        <tr>
+                            <td>{{ strtoupper($cm1['vicechairman']) }}</td>
+                            <td>{{ $cm1['total'] }}<td>
+                        </tr>
                     @endforeach
-                </ul>
-            </div>
 
-            <div class="row">
-                <ul>
-                    <h1 class="blue bb">3. SECRETARY</h1>
+                     <!-- SECRETARY -->
+                     <tr>
+                        <th colspan="2" style="text-align: center; font-weight: bold; font-size: 15px" class="text-primary">SECRETARY</th>
+                     <tr>
                     @foreach($secretary as $cm2)
-                        <li class="bbl bb" style="font-size: 20px"> {{ strtoupper($cm2['secretary'] ." - ". $cm2['total']) }}</li>
+                        <tr>
+                            <td>{{ strtoupper($cm2['secretary']) }}</td>
+                            <td>{{ $cm2['total'] }}<td>
+                        </tr>
                     @endforeach
-                </ul>
-            </div>
 
-            <div class="row">
-                <ul>
-                    <h1 class="blue bb">4. ASS. SECRETARY</h1>
+                    <!-- 4. ASS. SECRETARY -->
+                     <tr>
+                        <th colspan="2" style="text-align: center; font-weight: bold; font-size: 15px" class="text-primary">ASS. SEC.</th>
+                     <tr>
                     @foreach($ass_secretary as $cm3)
-                        <li class="bbl bb" style="font-size: 20px"> {{ strtoupper($cm3['ass_secretary'] ." - ". $cm3['total']) }}</li>
+                        <tr>
+                            <td>{{ strtoupper($cm3['ass_secretary']) }}</td>
+                            <td>{{ $cm3['total'] }}<td>
+                        </tr>
                     @endforeach
-                </ul>
-            </div>
 
-            <div class="row">
-                <ul>
-                    <h1 class="blue bb">5. TREASURER</h1>
+                    <!-- 5. TREASURER -->
+                    <tr>
+                        <th colspan="2" style="text-align: center; font-weight: bold; font-size: 15px" class="text-primary">TREASURER</th>
+                     <tr>
                     @foreach($treasurer as $cm4)
-                        <li class="bbl bb" style="font-size: 20px"> {{ strtoupper($cm4['treasurer'] ." - ". $cm4['total']) }}</li>
+                        <tr>
+                            <td>{{ strtoupper($cm4['treasurer']) }}</td>
+                            <td>{{ $cm4['total'] }}<td>
+                        </tr>
                     @endforeach
-                </ul>
-            </div>
 
-            <div class="row">
-                <ul>
-                    <h1 class="blue bb">6. FIN SEC</h1>
+                     <!-- 6. FIN SEC -->
+                     <tr>
+                        <th colspan="2" style="text-align: center; font-weight: bold; font-size: 15px" class="text-primary">FINANCIAL SEC.</th>
+                     <tr>
                     @foreach($finsec as $cm5)
-                        <li class="bbl bb" style="font-size: 20px"> {{ strtoupper($cm5['finsec'] ." - ". $cm5['total']) }}</li>
+                        <tr>
+                            <td>{{ strtoupper($cm5['finsec']) }}</td>
+                            <td>{{ $cm5['total'] }}<td>
+                        </tr>
                     @endforeach
-                </ul>
-            </div>
 
-            <div class="row">
-                <ul>
-                    <h1 class="blue bb">7. P.R.O</h1>
+                    <!-- 7. P.R.O -->
+                    <tr>
+                        <th colspan="2" style="text-align: center; font-weight: bold; font-size: 15px" class="text-primary">P.R.O</th>
+                     <tr>
                     @foreach($pro as $cm6)
-                        <li class="bbl bb" style="font-size: 20px"> {{ strtoupper($cm6['pro'] ." - ". $cm6['total']) }}</li>
+                        <tr>
+                            <td>{{ strtoupper($cm6['pro']) }}</td>
+                            <td>{{ $cm6['total'] }}<td>
+                        </tr>
                     @endforeach
-                </ul>
-            </div>
 
-            <div class="row">
-                <ul>
-                    <h1 class="blue bb">8. LEGAL</h1>
+                     <!-- 8. LEGAL-->
+                     <tr>
+                        <th colspan="2" style="text-align: center; font-weight: bold; font-size: 15px" class="text-primary">LEGAL</th>
+                     <tr>
                     @foreach($legal as $cm7)
-                        <li class="bbl bb" style="font-size: 20px"> {{ strtoupper($cm7['legal'] ." - ". $cm7['total']) }}</li>
+                        <tr>
+                            <td>{{ strtoupper($cm7['legal']) }}</td>
+                            <td>{{ $cm7['total'] }}<td>
+                        </tr>
                     @endforeach
-                </ul>
-            </div>
 
-            <div class="row">
-                <ul>
-                    <h1 class="blue bb">8. WELFARE</h1>
+                    <!-- 9. WELFARE-->
+                    <tr>
+                        <th colspan="2" style="text-align: center; font-weight: bold; font-size: 15px" class="text-primary">WELFARE</th>
+                     <tr>
                     @foreach($welfare as $cm8)
-                        <li class="bbl bb" style="font-size: 20px"> {{ strtoupper($cm8['welfare'] ." - ". $cm8['total']) }}</li>
+                        <tr>
+                            <td>{{ strtoupper($cm8['welfare']) }}</td>
+                            <td>{{ $cm8['total'] }}<td>
+                        </tr>
                     @endforeach
-                </ul>
-            </div>
+                <table>
         </div>  
 
     </div>
