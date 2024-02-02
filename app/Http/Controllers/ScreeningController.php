@@ -8,6 +8,7 @@ use App\Models\Vote;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Services\Sms;
+use App\Mail\UserRegistered;
 
 class ScreeningController extends Controller
 {
