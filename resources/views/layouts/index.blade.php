@@ -44,9 +44,9 @@
     jQuery(document).ready(function () {
         $('#time').syotimer({
             year: 2024,
-            month: 1,
-            day: 28,
-            hour: 24,
+            month: 2,
+            day: 3,
+            hour: 23,
             minute: 59,
         });
     });

@@ -59,18 +59,20 @@
                     <div class="row">
                         <div class="col-sm-10 col-xs-9">
                             <h5 class="heading-light no-margin animated fadeInRight">UPCOMING EVENT</h5>
-                            <h2 class="heading-bold animated fadeInLeft">98/04 ALUMNI ELECTION</h2>
+                            <h2 class="heading-bold animated fadeInLeft">98/04 ELECTION DAY !!!</h2>
                             <span>
                                 <span class="icon map-icon"></span>
                                 <span class="text-place text-light animated fadeInRight">Online.</span>
                             </span>
                             <br /><br />
-                            <h4 style="color:blue">Dear All, <br /><br />Please note that registration for the election has closed. Click Below to check is you have been validated</h4>
+                            <h4 style="color:blue"><b>Voting Instructions</b>, <br /><br />Please click the "Vote Here" button below,  Enter the code received via your phone or email. It is advisable if you copy and paste the code received to avoid error in the letters “i” or small letter “L”. 
+
+Then, click the “Verify Identity" button, You will be taking to a page with the names of candidates, ensure you tick the candidates of your choice, and finally click on the button "Cast My Vote" Thereafter you will be taken to the OPEN result board.</h4>
                         </div>
                         <div class="col-sm-2 col-xs-3">
                             <div class="area-calendar calendar animated slideInRight">
-                                <span class="day text-bold">28</span>
-                                <span class="month text-light">JAN</span>
+                                <span class="day text-bold">03</span>
+                                <span class="month text-light">Feb</span>
                                 <span class="year text-light bg-year">2024</span>
                             </div>
                         </div>
@@ -79,7 +81,7 @@
                 <div class="area-bottom">
                     <div id="time" class="pull-left animated slideInLeft"></div>
                     <!-- vote.register -->
-                    <a href="{{ route('screen.getGeneralList') }}" class="bnt bnt-theme join-now pull-right animated fadeIn">SCREENING LIST</a>
+                    <a href="{{ route('vote.register') }}" class="bnt bnt-theme join-now pull-right animated fadeIn">VOTE HERE</a>
                 </div>
                 
             </div>

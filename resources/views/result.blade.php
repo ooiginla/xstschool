@@ -59,13 +59,14 @@
 
                 <table class="table table-primary">
                     <!-- PRESIDENT -->
-                    <tr>
-                        <th colspan="2" style="text-align: center; font-weight: bold; font-size: 15px" class="text-primary">CHAIRMAN</th>
-                    <tr>
                     <tr class="text-danger">
                         <th>Candidates</th>
                         <th>Votes</th>
                     </tr>
+                    <tr>
+                        <th colspan="2" style="text-align: center; font-weight: bold; font-size: 15px" class="text-primary">CHAIRMAN</th>
+                    <tr>
+                   
                     @foreach($chairman as $cm)
                         <tr>
                             <td>{{ strtoupper($cm['chairman']) }}</td>
