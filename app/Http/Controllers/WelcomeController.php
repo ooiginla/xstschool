@@ -10,7 +10,7 @@ use App\Services\Sms;
 
 class WelcomeController extends Controller
 {
-
+    
     public function testEmail(Request $request)
     {
         $sms = new Sms;

@@ -14,6 +14,10 @@ use App\Http\Controllers\ScreeningController;
 | be assigned to the "web" middleware group. Make something great!
 |
 */
+Route::get('/testa', function(){
+    return phpinfo();
+});
+
 Route::get('/', [WelcomeController::class, 'home'])->name('welcome.home');
 Route::get('/registration', [WelcomeController::class, 'getRegistration'])->name('welcome.getRegistration');
 Route::post('/registration', [WelcomeController::class, 'postRegistration'])->name('welcome.postRegistration');
@@ -26,4 +30,4 @@ Route::get('/test/email', [WelcomeController::class, 'testEmail'])->name('welcom
 
 Route::get('/screening/list', [ScreeningController::class, 'getGeneralList'])->name('screen.getGeneralList');
 Route::get('/screen/members', [ScreeningController::class, 'getList'])->name('screen.getList');
-Route::post('/screen/members', [ScreeningController::class, 'postList'])->name('screen.postList');
+Route::post('/screen/members', [ScreeningController::class, 'postList'])->name('screen.postList'); 
