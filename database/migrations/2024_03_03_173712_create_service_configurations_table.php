@@ -24,6 +24,7 @@ return new class extends Migration
             $table->float('custom_commission')->nullable();;
             $table->float('custom_cap_amount')->nullable();;
             $table->boolean('queue_enabled')->default(false);
+            $table->boolean('status')->default(true);
             $table->timestamps();
         });
     }

@@ -26,10 +26,11 @@ return new class extends Migration
             $table->string('currency')->default('NGN');
             $table->string('payment_status'); // paid | pending | failed | reversed | liened
             $table->string('request_status'); // PENDING | SUCCESSFUL | FAILED
-            $table->string('provider_status'); // PENDING | SUCCESSFUL | FAILED
+            $table->string('provider_status')->nullable(); // PENDING | SUCCESSFUL | FAILED
             $table->string('response_code')->nullable(); 
             $table->string('response_message')->nullable();
             $table->float('client_price', 20, 4);
+            $table->string('value_number', 20, 4);
             $table->timestampsTz();
             $table->softDeletes();
         });

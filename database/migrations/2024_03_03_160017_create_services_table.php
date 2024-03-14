@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('services', function (Blueprint $table) {
             $table->id();
             $table->unsignedInteger('category_id');
-            $table->unsignedInteger('subcategory');
+            $table->unsignedInteger('subcategory_id');
             $table->string('name')->nullable();
             $table->string('code')->nullable();
             $table->boolean('status');

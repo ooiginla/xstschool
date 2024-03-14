@@ -15,10 +15,12 @@ return new class extends Migration
                 $table->id();
                 $table->unsignedBigInteger('request_id');
                 $table->unsignedBigInteger('business_id');
+                $table->unsignedBigInteger('service_id');
                 $table->string('reference');
+                $table->string('value_number')->nullable();
                 $table->string('currency')->default('NGN');
                 $table->string('narration')->nullable();
-                $table->string('category');
+                $table->string('category'); // ['purchase, balance, requery, getStatus']
                 $table->string('type');
                 $table->float('amount', 20, 4);
                 $table->string('status');    
