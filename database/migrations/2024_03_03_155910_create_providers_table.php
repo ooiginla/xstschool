@@ -17,6 +17,7 @@ return new class extends Migration
             $table->string('code');
             $table->string('logo')->nullable();
             $table->boolean('status')->default(true);
+            $table->double('balance',10,4);
             $table->timestamps();
             $table->softDeletes();
         });

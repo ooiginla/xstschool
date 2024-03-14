@@ -22,10 +22,10 @@ class ApiRequestService {
                                 ->where('client_ref', $apiRequestDto->client_ref)
                                 ->first();
 
-        $price = $this->getServiceCostFee($apiRequestDto->business, $apiRequestDto->service);
-
         if(empty($apiRequest)) 
         {
+            $price = $this->getServiceCostFee($apiRequestDto->business, $apiRequestDto->service);
+
             $apiRequest = new ApiRequest;
             $apiRequest->business_id = $apiRequestDto->business->id;
             $apiRequest->client_ref = $apiRequestDto->client_ref;
@@ -46,10 +46,7 @@ class ApiRequestService {
             $apiRequest->save();
         }
 
-        $apiRequestDto->apiRequest = $apiRequest;
-        $apiRequestDto->businessCustomConfig = $this->serviceConfig;
-
-        return $apiRequestDto;
+        return $apiRequest;
    }
 
    public function generateReference($service_code = 'REF')

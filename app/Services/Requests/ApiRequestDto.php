@@ -16,5 +16,6 @@ class ApiRequestDto {
     public $type;
     public $amount;
     public $value_number;
+    public $transaction;
 
 }
