@@ -8,6 +8,8 @@ use App\Services\Requests\ApiRequestDto;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
 use App\Models\ServiceProvider;
+use App\Models\Provider;
+use App\Exceptions\InternalAppException;
 
 class BaseService
 {
@@ -22,6 +24,7 @@ class BaseService
     protected $adapterRequestUrl;
     protected $adapterRequestDto;
     protected $transaction;
+    protected $serviceObject;
 
     public function __construct(ApiRequestService $apiRequestService) {
         $this->apiRequestService = $apiRequestService;
@@ -34,7 +37,11 @@ class BaseService
 
     public function getServiceModel()
     {
-        return Service::where('name', $this->service_name)->first();
+        if(empty($this->serviceObject)) {
+            $this->serviceObject = Service::where('name', $this->service_name)->first();
+        }   
+
+        return $this->serviceObject;
     }
 
     public function getCurrency()
@@ -77,10 +84,15 @@ class BaseService
     public function callServiceProvider()
     {
         $this->loadProvidersIntoCache();
+        $serviceProvider = $this->chooseAdapter();
 
+        if(empty($serviceProvider)){
+            throw new InternalAppException(ErrorCode::NO_PROVIDER_ACTIVE);
+        }
+        
         Http::acceptJson()
                 ->withToken($this->getToken())
-                ->post($this->adapterRequestUrl, $this->adapterRequestDto);
+                ->post( $serviceProvider->adapterRequestUrl, $this->adapterRequestDto);
     }
 
     public function getToken()
@@ -89,30 +101,50 @@ class BaseService
     }
 
     public function chooseAdapter()
-    {/*
-        SERVICE_NAME:[
-            'PROVIDER' => [
-                'success': 20
-                'failure': 4,
-                'status': active
-            ]
-        ],
-        SERVICE_NAME:['']*/
+    {
+        $providers = Cache::get($this->service_name);
+        
+        $max_provider = null;
+        $max_success_rate = 0;
+
+        foreach($providers as $provider => $data){
+            if ($data['success_rate'] >= $max_success_rate && $data['status']) {
+                $max_success_rate = $data['success_rate'];
+                $max_provider = $provider;
+            }
+        }
+
+
+        $provider_id = Provider::where('code', $max_provider)->value('id');
+
+        return ServiceProvider::where('service_id', $this->serviceObject->id)
+                            ->where('provider_id', $provider_id)
+                            ->first();
+        /*
+            SERVICE_NAME:[
+                'PROVIDER' => [
+                    'success': 20
+                    'failure': 4,
+                    'status': active
+                ]
+            ],
+            SERVICE_NAME:['']
+        */
     }
 
     public function loadProvidersIntoCache()
     {
-        
         if (! Cache::has($this->service_name)) 
         {
             $providers = ServiceProvider::select('providers.code')
                             ->join('providers', 'service_providers.provider_id', 'providers.id')
-                            ->where('service_id', 1)
+                            ->where('service_id', $this->serviceObject->id)
                             ->get();
 
             $data = [];
+
             foreach($providers as $provider){
-                $data[$provider->code] = ['success' => 0,'failure' => 0, status => true];
+                $data[$provider->code] = ['success' => 0, 'failure' => 0, 'success_rate' => 100, 'status' => true, 'last_updated' => time(),];
             }
            
             Cache::put($this->service_name, $data);
