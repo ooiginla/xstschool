@@ -13,10 +13,10 @@ return new class extends Migration
     {
         Schema::create('provider_transactions', function (Blueprint $table) {
             $table->id();
-            $table->unsignedInteger('transaction_id');
+            $table->unsignedInteger('request_id');
             $table->unsignedInteger('service_id');
             $table->unsignedInteger('provider_id');
-            $table->string('provider_ref');
+            $table->string('provider_ref')->nullable();
             $table->string('standard_request')->nullable();
             $table->string('standard_response')->nullable();
             $table->string('provider_request')->nullable();

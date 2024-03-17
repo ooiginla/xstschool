@@ -20,15 +20,13 @@ class SmsService extends BaseService
         $this->setRequestPayload($data);
         $this->mapPayloadToRequestDto();
         $this->logTransaction();
-        $this->lienBalance();
         $this->prepareAdapterRequest();
         $this->callServiceProvider();
-
-        $this->handleProviderResponse($response);
+        $this->handleProviderResponse();
 
        //  return $this->sendFinalResponse($this->) 
         dd('here');
-    }
+    } 
 
     public function mapPayloadToRequestDto()
     {
@@ -40,7 +38,7 @@ class SmsService extends BaseService
         $this->apiRequestDto->value_number = $this->getValueNumber();
     }
 
-    public function handleProviderResponse($response)
+    public function handleProviderResponse()
     {
 
     }
@@ -48,7 +46,7 @@ class SmsService extends BaseService
     public function prepareAdapterRequest()
     {
         $this->adapterRequestDto = [
-            'request_id' => $this->transaction->oystr_ref,
+            'transaction_id' => $this->transaction->oystr_ref,
             'phonenumber' => $this->requestPayload['phonenumber'],
             'subject' => $this->requestPayload['subject'] ?? '',
             'message' => $this->requestPayload['message'] ?? '',
