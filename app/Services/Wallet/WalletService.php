@@ -20,6 +20,8 @@ class WalletService
     private $ledgers = [];
     private $ledger_total = 0;
     private $total_amount = 0.0;
+    private $unlien = true;
+
 
     private $wallets_to_lock = [];
     private $debit_accounts = [];
@@ -28,7 +30,7 @@ class WalletService
     private $provider_reference = null;
     private $provider = null;
 
-    public function post($business_id, $product_id, $reference, $total_amount, array $ledgers, $user = null, $provider_reference = null, $provider = null): WalletResponse
+    public function post($business_id, $product_id, $reference, $total_amount, array $ledgers, $unlien = true, $user = null, $provider_reference = null, $provider = null, ): WalletResponse
     {
         $this->reference = $reference;
         $this->business_id = $business_id;
@@ -39,6 +41,7 @@ class WalletService
 
         $this->provider_reference = $provider_reference;
         $this->provider = $provider;
+        $this->unlien = $unlien;
 
         return $this->process();
     }
@@ -188,6 +191,11 @@ class WalletService
 
         $new_balance = $model->balance + $model->overdraw_limit;
 
+        if($this->unlien){
+            $model->liened_amount -= $ledger->amount;
+            Log::info("Lin removed");
+        }
+
         $model->save();
 
         $this->createRecordLog($ledger, $prev_balance, $new_balance);
@@ -235,8 +243,8 @@ class WalletService
             }
 
             if ($ledger->account->business_id != $this->business_id) {
-                $early_return_error = "Account number: $ledger->account_no does not belong to your organization";
-                break;
+                // $early_return_error = "Account number: $ledger->account_no does not belong to your organization";
+                // break;
             }
 
             $account_id = $ledger->account->id;
@@ -284,6 +292,53 @@ class WalletService
 
     public function requery($reference)
     {
+    }
+
+    public function lienAmount($business_id, $amount)
+    {
+        try{
+            DB::transaction(function () use ($amount, $business_id)
+            {
+                $account = Account::where('business_id', $business_id)->lockForUpdate()->first();
+                
+                // Get the new balance
+                $account_balance = ($account->balance + $account->overdraw_limit) - ($account->liened_amount);
+
+                if($account_balance >= $amount) {
+                    $account->liened_amount += $amount;
+                    $account->save();
+                }else{
+                    throw new \Exception();
+                }
+
+                Log::info("Lien applied");
+            }, 5);
+
+            return (object)[
+                'status'=> true,
+                'message' => 'Liened successful'
+            ];
+
+        }catch (\Throwable $e) {
+            return (object)[
+                'status'=> false,
+                'message' => 'Insufficient balance'
+            ];
+        }
+    }
+
+    public function getBalanceByBusinessId($business_id)
+    {
+        
+
+        if (!$account) {
+            return 0;
+        }
+
+        // Get the new balance
+        $balance = ($account->balance + $account->overdraw_limit) - ($account->liened_amount);
+
+        return $balance;
     }
 }
 

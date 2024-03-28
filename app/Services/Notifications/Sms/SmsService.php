@@ -4,28 +4,21 @@ namespace App\Services\Notifications\Sms;
 
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Support\Facades\Http;
+use App\Services\IRequestService;
 use App\Services\Requests\ApiRequestDto;
 use App\Services\Requests\ApiRequestService;
 use App\Services\BaseService;
 
-class SmsService extends BaseService
+class SmsService extends BaseService implements IRequestService
 {
     protected $narration_prefix = 'SMS Purchase';
     protected $service_name = 'SEND_SMS';
     protected $category = 'PURCHASE';
-    
+     
 
     public function singleSmsTransaction($data)
     {
-        $this->setRequestPayload($data);
-        $this->mapPayloadToRequestDto();
-        $this->logTransaction();
-        $this->prepareAdapterRequest();
-        $this->callServiceProvider();
-        $this->handleProviderResponse();
-
-       //  return $this->sendFinalResponse($this->) 
-        dd('here');
+        return $this->processData($data);
     } 
 
     public function mapPayloadToRequestDto()
@@ -40,7 +33,12 @@ class SmsService extends BaseService
 
     public function handleProviderResponse()
     {
-
+        // Cherry pick Items from Adapter here: $this->adapterResponse->
+        // Final Response Payload goes here
+        // dd($this->adapterResponse);
+        if (!empty($this->adapterResponse)) {
+            $this->serviceReturnedData['name'] = $this->adapterResponse['foo'] ?? '';
+        }
     }
 
     public function prepareAdapterRequest()

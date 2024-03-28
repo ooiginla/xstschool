@@ -6,6 +6,8 @@ use App\Models\Request as ApiRequest;
 use Illuminate\Support\Str;
 use App\Models\ServiceProvider;
 use App\Models\ServiceConfiguration;
+use App\Services\Wallet\WalletService;
+use App\Exceptions\ErrorCode;
 
 class ApiRequestService {
 
@@ -25,6 +27,9 @@ class ApiRequestService {
         if(empty($apiRequest)) 
         {
             $price = $this->getServiceCostFee($apiRequestDto->business, $apiRequestDto->service);
+        
+            $walletService = new WalletService();
+            $lienResponse = $walletService->lienAmount($apiRequestDto->business->id, $price);
 
             $apiRequest = new ApiRequest;
             $apiRequest->business_id = $apiRequestDto->business->id;
@@ -36,17 +41,41 @@ class ApiRequestService {
             $apiRequest->service_id = $apiRequestDto->service->id;
             $apiRequest->narration = $apiRequestDto->narration;
             $apiRequest->currency = $apiRequestDto->currency;
-            $apiRequest->payment_status = self::PENDING;
-            $apiRequest->request_status = self::PENDING;
-            $apiRequest->provider_status = NULL;
-            $apiRequest->response_code = self::PENDING;
-            $apiRequest->response_message = NULL;
             $apiRequest->client_price = $price;
             $apiRequest->value_number = $apiRequestDto->value_number ?? NULL;
+            $apiRequest->provider_status = NULL;
+
+            if ($lienResponse->status) {
+                $apiRequest->payment_status = self::PENDING;
+                $apiRequest->request_status = self::PENDING;
+                $apiRequest->liened = true;
+
+                $apiRequest->response_code = ErrorCode::CODES['REQUEST_PROCESSING']['code'];
+                $apiRequest->response_message = ErrorCode::CODES['REQUEST_PROCESSING']['message'];
+            }else{
+                $apiRequest->payment_status =  self::FAILED;
+                $apiRequest->request_status = self::FAILED;
+                $apiRequest->liened = false;
+
+                $apiRequest->response_code = ErrorCode::CODES['INSUFFICIENT_BALANCE']['code'];
+                $apiRequest->response_message = $lienResponse->message;
+            }
+            
             $apiRequest->save();
         }
 
         return $apiRequest;
+   }
+
+   public function updateSuccessfulRequest($apiRequest) 
+   {
+        $apiRequest->payment_status = self::PAID;
+        $apiRequest->request_status = self::SUCCESS;
+        $apiRequest->liened = false;
+
+        $apiRequest->response_code = ErrorCode::CODES['SUCCESSFUL']['code'];
+        $apiRequest->response_message = ErrorCode::CODES['SUCCESSFUL']['message'];
+        $apiRequest->save();
    }
 
    public function generateReference($service_code = 'REF')

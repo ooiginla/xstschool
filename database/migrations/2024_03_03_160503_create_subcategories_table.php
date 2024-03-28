@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedInteger('category_id');
             $table->string('name')->nullable();
+            $table->unsignedInteger('account_id')->nullable();
         });
     }
 

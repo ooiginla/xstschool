@@ -22,11 +22,13 @@ return new class extends Migration
             $table->string('service_name')->nullable();
             $table->unsignedInteger('service_id')->nullable();
             $table->unsignedInteger('provider_id')->nullable();
+            $table->unsignedInteger('provider_transaction_id')->nullable();
             $table->string('narration')->nullable();
             $table->string('currency')->default('NGN');
             $table->string('payment_status'); // paid | pending | failed | reversed | liened
             $table->string('request_status'); // PENDING | SUCCESSFUL | FAILED
             $table->string('provider_status')->nullable(); // PENDING | SUCCESSFUL | FAILED
+            $table->boolean('liened')->default(false); 
             $table->string('response_code')->nullable(); 
             $table->string('response_message')->nullable();
             $table->float('client_price', 20, 4);

@@ -20,6 +20,6 @@ class SmsController extends Controller
 
         $data = $request->all();
 
-        $smsService->singleSmsTransaction($data, $apiRequestDto);
+        return $smsService->singleSmsTransaction($data, $apiRequestDto);
     }
 }

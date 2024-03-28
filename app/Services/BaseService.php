@@ -11,7 +11,9 @@ use App\Models\ServiceProvider;
 use App\Models\ProviderTransaction;
 use App\Models\Provider;
 use App\Models\Transaction;
+use App\Models\Account;
 use App\Exceptions\InternalAppException;
+use App\Exceptions\ErrorCode;
 use App\Services\Wallet\WalletService;
 use App\Services\Wallet\Ledger;
 use App\Services\Transactions\TransactionDto;
@@ -27,10 +29,12 @@ class BaseService
     protected $category = 'PURCHASE';
 
     protected $apiRequestService;
+    protected $walletService;
     protected $apiRequestDto;
     protected $adapterRequestUrl;
     protected $adapterRequestDto;
     protected $adapterResponse;
+    protected $serviceReturnedData = [];
     protected $transaction;
     protected $serviceObject;
 
@@ -61,6 +65,7 @@ class BaseService
     {
         $this->requestPayload = $data;
         $this->apiRequestDto = new ApiRequestDto;
+        $this->walletService = new WalletService();
     }
 
     public function getValueNumber()
@@ -80,20 +85,19 @@ class BaseService
 
     public function logTransaction()
     {
-        // Log Request
+        // Log Request 
         $this->transaction = $this->apiRequestService->logRequest($this->apiRequestDto);
-
-        // Lien Balance
-        $this->lienBalance();
-    }
-
-    private function lienBalance()
-    {
-        return true;
     }
 
     public function callServiceProvider()
     {
+        // Has final status previously? Don't call provider again
+        if ($this->transaction->request_status != Status::PENDING) {
+            $this->adapterResponse = json_decode($this->transaction?->providerTransaction?->standard_response, true);
+            return;
+        }
+
+
         $this->loadProvidersIntoCache();
         $serviceProvider = $this->chooseAdapter();
 
@@ -101,27 +105,58 @@ class BaseService
             throw new InternalAppException(ErrorCode::NO_PROVIDER_ACTIVE);
         }
 
+        // Log provider request
         $providerTxn = $this->logProviderRequest($serviceProvider);
+
+        // Update Provider Txn on Request Object
+        $this->transaction->provider_transaction_id = $providerTxn->id;
+        $this->transaction->save();
+
+
         
         $adapterResponse = null;
 
         try{
-
             $adapterResponse = Http::fake([
-                'testing.com/*' => Http::response(['foo' => 'bar'], 200, ['Headers']),
+                'testing.com/*' => Http::response([
+                    'foo' => 'bar', 
+                    'debit_business' => 'YES', 
+                    'provider_raw_data'=>'a4apple'
+                ], 200, ['Headers']),
             ])
             ->acceptJson()
             ->withToken($this->getToken())
             ->post( $serviceProvider->adapter_url, $this->adapterRequestDto);
 
+            $adapterResponse = $adapterResponse->json();
+
         }catch(ConnectionException $ex){
-            //...handle here
+            throw new InternalAppException(ErrorCode::CONNECTION_TIMEOUT);
+        }catch(Exception $ex){
+            throw new InternalAppException(ErrorCode::PROVIDER_UNREACHABLE);
         }
         
+        // Update provider response
         $this->logProviderResponse($providerTxn, $adapterResponse);
 
+        if($this->shoudDebitBusiness($adapterResponse)) 
+        {
+            // Debit Transaction
+            $walletResponse = $this->debitTransaction($is_api_request = true);
 
-        $this->debitTransaction();
+            if($walletResponse->isSuccessful()) {
+                $this->apiRequestService->updateSuccessfulRequest($this->transaction);
+            }
+        }
+
+        $this->adapterResponse = $adapterResponse;
+    }
+
+    public function shoudDebitBusiness($adapterResponse)
+    {
+        if ($adapterResponse['debit_business'] == 'YES') {
+            return true;
+        }
     }
 
     public function getCoreTransactionDto()
@@ -141,21 +176,57 @@ class BaseService
         return $transactionDto;
     }
 
-    private function debitTransaction()
+    public function getDebitLedger()
     {
+        $account = Account::where('business_id',$this->transaction->business_id)->first();
+
+        if(empty($account)){
+            throw new Exception('Debit Account: Business wallet account not setup');
+        }
+
+        return new Ledger(
+            'DEBIT', 
+            $account->account_no, 
+            $this->transaction->client_price, 
+            $this->getNarration(), 
+            'REGULAR'
+        );
+    }
+
+    public function getCreditLedger()
+    {
+
+        $account = $this->getServiceModel()->subcategory->account;
+
+        if(empty($account)){
+            throw new Exception('Credit Account: Internal Wallet account not setup');
+        }
+
+        return new Ledger(
+            'CREDIT', 
+            $account->account_no, 
+            $this->transaction->client_price, 
+            $this->getNarration(), 
+            'REGULAR'
+        );
+    }
+
+    private function debitTransaction($is_api_request)
+    {
+        if(! $this->transaction->payment_status == Status::PENDING) {
+            // Log We lost Money....
+            return;
+        }
+
         $transactionDto = $this->getCoreTransactionDto();
         $transactionRecord = $this->createTransactionRecord($transactionDto);
 
 
-        $debitLedger = new Ledger('DEBIT', '0000000001', $this->transaction->client_price, 
-        'payment for Api purchase', 'REGULAR');
+        $debitLedger = $this->getDebitLedger();
+        $creditLedger = $this->getCreditLedger();
 
-        $creditLedger = new Ledger('CREDIT', '0000000002', $this->transaction->client_price, 
-        'payment for Api purchase', 'REGULAR');
 
-        $walletService = new WalletService();
-
-        $walletResponse = $walletService->post(
+        $walletResponse = $this->walletService->post(
             $this->requestPayload['business']->id,
             1,
             $this->transaction->oystr_ref,
@@ -163,7 +234,19 @@ class BaseService
             [$debitLedger, $creditLedger]
         );
 
-        dd($walletResponse);
+        if($walletResponse->isSuccessful()) {
+            // Update Request:
+            $transactionRecord->status = Status::SUCCESS;
+            $transactionRecord->save();
+        }
+        
+        if(! $is_api_request && $walletResponse->isFailed()) {
+            // Update Request:
+            $transactionRecord->status = Status::FAILED;
+            $transactionRecord->save();
+        }  
+
+        return $walletResponse;
     }
 
     public function createTransactionRecord($transactionDto)
@@ -186,7 +269,7 @@ class BaseService
     
     public function logProviderResponse($providerTxn, $adapterResponse)
     {
-        $providerTxn->standard_response = $adapterResponse?->body();
+        $providerTxn->standard_response = json_encode($adapterResponse);
         $providerTxn->save();
     }
 
@@ -257,5 +340,31 @@ class BaseService
            
             Cache::put($this->service_name, $data);
         }
+    }
+
+    public function sendFinalResponse()
+    {
+        $this->transaction->refresh();
+
+        $response['status'] = true;
+        $response['code'] = $this->transaction->response_code;
+        $response['message'] = $this->transaction->response_message;
+        $response['data'] = $this->serviceReturnedData ?? [];
+        $response['provider_data'] = $this->adapterResponse['provider_raw_data'] ?? [];
+
+
+        return response()->json($response, 200);
+    }
+
+    public function processData($data)
+    {
+        $this->setRequestPayload($data);
+        $this->mapPayloadToRequestDto();
+        $this->logTransaction();
+        $this->prepareAdapterRequest();
+        $this->callServiceProvider();
+        $this->handleProviderResponse();
+
+        return $this->sendFinalResponse();
     }
 }
