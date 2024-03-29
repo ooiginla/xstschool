@@ -112,16 +112,17 @@ class BaseService
         $this->transaction->provider_transaction_id = $providerTxn->id;
         $this->transaction->save();
 
-
-        
         $adapterResponse = null;
 
         try{
             $adapterResponse = Http::fake([
                 'testing.com/*' => Http::response([
-                    'foo' => 'bar', 
-                    'debit_business' => 'YES', 
-                    'provider_raw_data'=>'a4apple'
+                    'status' => 'SUCCESS',
+                    'response_code' => 'SUCCESSFUL',
+                    'response_message' => 'Sms successfully sent',
+                    'debit_business' => 'YES',
+                    'provider_raw_data'=>'a4apple',
+                    'data' => []
                 ], 200, ['Headers']),
             ])
             ->acceptJson()
@@ -139,20 +140,63 @@ class BaseService
         // Update provider response
         $this->logProviderResponse($providerTxn, $adapterResponse);
 
-        if($this->shoudDebitBusiness($adapterResponse)) 
+        $this->adapterResponse = $adapterResponse;
+
+        if($this->shouldDebitBusiness($adapterResponse)) 
         {
             // Debit Transaction
             $walletResponse = $this->debitTransaction($is_api_request = true);
 
-            if($walletResponse->isSuccessful()) {
-                $this->apiRequestService->updateSuccessfulRequest($this->transaction);
+            if ($walletResponse->isSuccessful())
+            {
+                $this->transaction->payment_status = Status::PAID;
+                $this->transaction->debited = true;
+            }elseif($walletResponse->isFailed()){
+                $this->transaction->payment_status = Status::FAILED;
+            }else{
+                // $this->transaction->payment_status = Status::PENDING;
             }
+
+            $this->transaction->save();
+            $this->transaction->refresh();
+        }else{
+
         }
 
-        $this->adapterResponse = $adapterResponse;
+        $this->updateRequestWithAdapterResponse();   
+
+        $this->unlienRequest();
     }
 
-    public function shoudDebitBusiness($adapterResponse)
+    public function unlienRequest()
+    {
+        // Unlien Request: is liened, has final status, our debit attempt did not fail
+        if ($this->transaction->liened 
+                && ($this->transaction->request_status == Status::FAILED || $this->transaction->request_status == Status::SUCCESS)
+                && ($this->transaction->payment_status != Status::FAILED)
+        ) {
+            $this->walletService->unlienRequest($this->transaction);
+        }
+    }
+
+    public function updateRequestWithAdapterResponse()
+    {
+        if(! empty($this->adapterResponse) && array_key_exists($this->adapterResponse['response_code'], ErrorCode::CODES))
+        {
+            $this->transaction->request_status = $this->adapterResponse['status'];
+            $this->transaction->response_code = ErrorCode::CODES[$this->adapterResponse['response_code']]['code'];
+            $this->transaction->response_message = $this->adapterResponse['response_message'] ?? ErrorCode::CODES[$this->adapterResponse['response_code']]['message'];
+        }else{
+            $this->transaction->response_code = ErrorCode::CODES['PROVIDER_UNKNOWN_RESPONSE']['code'];
+            $this->transaction->response_message = ErrorCode::CODES['PROVIDER_UNKNOWN_RESPONSE']['response_message'];
+            
+            // Log a buginfo
+        }
+                
+        $this->transaction->save();
+    }
+
+    public function shouldDebitBusiness($adapterResponse)
     {
         if ($adapterResponse['debit_business'] == 'YES') {
             return true;
@@ -221,10 +265,8 @@ class BaseService
         $transactionDto = $this->getCoreTransactionDto();
         $transactionRecord = $this->createTransactionRecord($transactionDto);
 
-
         $debitLedger = $this->getDebitLedger();
         $creditLedger = $this->getCreditLedger();
-
 
         $walletResponse = $this->walletService->post(
             $this->requestPayload['business']->id,

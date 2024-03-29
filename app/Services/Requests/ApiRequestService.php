@@ -8,6 +8,7 @@ use App\Models\ServiceProvider;
 use App\Models\ServiceConfiguration;
 use App\Services\Wallet\WalletService;
 use App\Exceptions\ErrorCode;
+use App\Services\Transactions\Status;
 
 class ApiRequestService {
 
@@ -46,15 +47,15 @@ class ApiRequestService {
             $apiRequest->provider_status = NULL;
 
             if ($lienResponse->status) {
-                $apiRequest->payment_status = self::PENDING;
-                $apiRequest->request_status = self::PENDING;
+                $apiRequest->payment_status = Status::HELD;
+                $apiRequest->request_status = Status::PENDING;
                 $apiRequest->liened = true;
 
                 $apiRequest->response_code = ErrorCode::CODES['REQUEST_PROCESSING']['code'];
                 $apiRequest->response_message = ErrorCode::CODES['REQUEST_PROCESSING']['message'];
             }else{
-                $apiRequest->payment_status =  self::FAILED;
-                $apiRequest->request_status = self::FAILED;
+                $apiRequest->payment_status =  Status::FAILED;
+                $apiRequest->request_status = Status::FAILED;
                 $apiRequest->liened = false;
 
                 $apiRequest->response_code = ErrorCode::CODES['INSUFFICIENT_BALANCE']['code'];
@@ -65,17 +66,6 @@ class ApiRequestService {
         }
 
         return $apiRequest;
-   }
-
-   public function updateSuccessfulRequest($apiRequest) 
-   {
-        $apiRequest->payment_status = self::PAID;
-        $apiRequest->request_status = self::SUCCESS;
-        $apiRequest->liened = false;
-
-        $apiRequest->response_code = ErrorCode::CODES['SUCCESSFUL']['code'];
-        $apiRequest->response_message = ErrorCode::CODES['SUCCESSFUL']['message'];
-        $apiRequest->save();
    }
 
    public function generateReference($service_code = 'REF')

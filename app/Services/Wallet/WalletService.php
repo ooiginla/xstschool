@@ -30,7 +30,7 @@ class WalletService
     private $provider_reference = null;
     private $provider = null;
 
-    public function post($business_id, $product_id, $reference, $total_amount, array $ledgers, $unlien = true, $user = null, $provider_reference = null, $provider = null, ): WalletResponse
+    public function post($business_id, $product_id, $reference, $total_amount, array $ledgers, $unlien = false, $user = null, $provider_reference = null, $provider = null, ): WalletResponse
     {
         $this->reference = $reference;
         $this->business_id = $business_id;
@@ -191,11 +191,6 @@ class WalletService
 
         $new_balance = $model->balance + $model->overdraw_limit;
 
-        if($this->unlien){
-            $model->liened_amount -= $ledger->amount;
-            Log::info("Lin removed");
-        }
-
         $model->save();
 
         $this->createRecordLog($ledger, $prev_balance, $new_balance);
@@ -327,18 +322,40 @@ class WalletService
         }
     }
 
-    public function getBalanceByBusinessId($business_id)
+    public function unlienRequest($request)
     {
-        
+        try{
+            DB::transaction(function () use ($request)
+            {
+                // update account
+                $account = Account::where('business_id', $request->business_id)->lockForUpdate()->first();
+                $account->liened_amount -= $request->client_price;
+                $account->save();
 
-        if (!$account) {
-            return 0;
+                // update request
+                $request->liened = 0;
+
+                // For failed
+                if($request->payment_status == 'HELD') {
+                    $request->payment_status = 'RELEASED';
+                }
+
+                $request->save();
+            }, 5);
+
+            Log::info('Unliened successfully');
+
+            return (object)[
+                'status'=> true,
+                'message' => 'Liened removed successfully'
+            ];
+
+        }catch (\Exception $e) {
+            return (object)[
+                'status'=> false,
+                'message' => 'Error Removing lien:'.$e->getMessage()
+            ];
         }
-
-        // Get the new balance
-        $balance = ($account->balance + $account->overdraw_limit) - ($account->liened_amount);
-
-        return $balance;
     }
 }
 

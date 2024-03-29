@@ -14,23 +14,37 @@ class ErrorCode
     const CONNECTION_TIMEOUT = 'CONNECTION_TIMEOUT';
     const PROVIDER_UNREACHABLE = 'PROVIDER_UNREACHABLE';
     const SUCCESSFUL = 'SUCCESSFUL';
+    const INVALID_PAYLOAD = 'INVALID_PAYLOAD';
+
+   
+    const PROVIDER_INVALID_AUTH = 'PROVIDER_INVALID_AUTH';
+    const PROVIDER_OUT_OF_FUNDS = 'PROVIDER_OUT_OF_FUNDS';
+    const PROVIDER_ERROR = 'PROVIDER_ERROR';
+    const PROVIDER_UNKNOWN_RESPONSE = 'PROVIDER_UNKNOWN_RESPONSE';
+    const PROVIDER_INVALID_PAYLOAD = 'PROVIDER_INVALID_PAYLOAD';
 
 
 
     const CODES = [
-        'UNAUTHENTICATED_BUSINESS' => ['message'=> 'Error, unable to identify business', 'code' => 'ER100', 'http_code' => 200],
-        'INVALID_AUTH_KEY' => ['message'=> 'Invalid authentication key, check your api key', 'code' => 'ER101', 'http_code' => 200],
-        'DISABLED_BUSINESS_ACCOUNT' => ['message'=> 'Your business account is currently disabled, see admin', 'code' => 'ER102', 'http_code' => 200],
-        'GOLIVE_NOT_ENABLED' => ['message'=> 'Your business account has not been enabled for go live, see admin', 'code' => 'ER103', 'http_code' => 200],
-        'NO_PROVIDER_ACTIVE' => ['message'=> 'No active service provider available at the moment', 'code' => 'ER104', 'http_code' => 200],
-        'INSUFFICIENT_BALANCE' => ['message'=> 'Insufficient balance', 'code' => 'ER105', 'http_code' => 200],
+        'SUCCESSFUL' =>                 ['code' => '00', 'message'=> 'Requst Successful', 'http_code' => 200],
 
+        'REQUEST_PROCESSING' =>         ['code' => 'PR100', 'message'=> 'Your request is still processing', 'http_code' => 200],
+        'CONNECTION_TIMEOUT' =>         ['code' => 'PR101', 'message'=> 'Connection timeout while reaching provider','http_code' => 200],
+        'PROVIDER_UNREACHABLE' =>       ['code' => 'PR102', 'message'=> 'Unable to reach service provider','http_code' => 200],
         
-        'SUCCESSFUL' => ['message'=> 'Requst Successful', 'code' => '00', 'http_code' => 200],
+        'UNAUTHENTICATED_BUSINESS' =>   ['code' => 'ER100', 'message'=> 'Error, unable to identify business', 'http_code' => 200],
+        'INVALID_AUTH_KEY' =>           ['code' => 'ER101', 'message'=> 'Invalid authentication key, check your api key', 'http_code' => 200],
+        'DISABLED_BUSINESS_ACCOUNT' =>  ['code' => 'ER102', 'message'=> 'Your business account is currently disabled, see admin', 'http_code' => 200],
+        'GOLIVE_NOT_ENABLED' =>         ['code' => 'ER103', 'message'=> 'Your business account has not been enabled for go live, see admin', 'http_code' => 200],
+        'NO_PROVIDER_ACTIVE' =>         ['code' => 'ER104', 'message'=> 'No active service provider available at the moment', 'http_code' => 200],
+        'INSUFFICIENT_BALANCE' =>       ['code' => 'ER105', 'message'=> 'Insufficient balance', 'http_code' => 200],
+        'INVALID_PAYLOAD' =>            ['code' => 'ER106', 'message'=> 'Invalid Payload', 'http_code' => 200],
 
-        'REQUEST_PROCESSING' => ['message'=> 'Your request is still processing', 'code' => 'PR100', 'http_code' => 200],
-        'CONNECTION_TIMEOUT' => ['message'=> 'Connection timeout while reaching provider', 'code' => 'PR101', 'http_code' => 200],
-        'PROVIDER_UNREACHABLE' => ['message'=> 'Unable to reach service provider', 'code' => 'PR102', 'http_code' => 200],
+        'PROVIDER_INVALID_AUTH' =>      ['code' => 'ER107', 'message'=> 'Invalid auth on provider', 'http_code' => 200],
+        'PROVIDER_OUT_OF_FUNDS' =>      ['code' => 'ER108', 'message'=> 'Out of funds on provider', 'http_code' => 200],
+        'PROVIDER_ERROR' =>             ['code' => 'ER109', 'message'=> 'Error on provider', 'http_code' => 200],
+        'PROVIDER_UNKNOWN_RESPONSE' =>  ['code' => 'ER110', 'message'=> 'Provider sent an unknown response', 'http_code' => 200],
+        'PROVIDER_INVALID_PAYLOAD' =>   ['code' => 'ER111', 'message'=> 'Invalid payload sent to provider', 'http_code' => 200],
     ];
 }
    
