@@ -5,10 +5,12 @@ namespace App\Services\Requests;
 use App\Models\Request as ApiRequest;
 use Illuminate\Support\Str;
 use App\Models\ServiceProvider;
+use App\Models\Retry;
 use App\Models\ServiceConfiguration;
 use App\Services\Wallet\WalletService;
 use App\Exceptions\ErrorCode;
 use App\Services\Transactions\Status;
+use App\Exceptions\InternalAppException;
 
 class ApiRequestService {
 
@@ -25,8 +27,7 @@ class ApiRequestService {
                                 ->where('client_ref', $apiRequestDto->client_ref)
                                 ->first();
 
-        if(empty($apiRequest)) 
-        {
+        if(empty($apiRequest)) {
             $price = $this->getServiceCostFee($apiRequestDto->business, $apiRequestDto->service);
         
             $walletService = new WalletService();
@@ -63,6 +64,53 @@ class ApiRequestService {
             }
             
             $apiRequest->save();
+        }
+
+        if ($apiRequestDto->retry_action) 
+        {
+            // Check if it can work or throw exception...
+            if(
+                $apiRequest->request_status == Status::PENDING ||
+                $apiRequest->request_status == Status::SUCCESS || 
+                $apiRequest->payment_status == Status::PAID || 
+                $apiRequest->payment_status == Status::HELD || 
+                $apiRequest->liened == 1
+            ){
+                throw new InternalAppException(ErrorCode::UNABLE_TO_RETRY_STATUS_ISSUES);
+            }
+            
+            $price = $this->getServiceCostFee($apiRequestDto->business, $apiRequestDto->service);
+        
+            $walletService = new WalletService();
+            $lienResponse = $walletService->lienAmount($apiRequestDto->business->id, $price);
+
+
+            // Store previous entries in retry table
+            $retry = new Retry;
+            $retry->request_id =  $apiRequest->id;
+            $retry->provider_transaction_id = $apiRequest->provider_transaction_id;
+            $retry->prev_request_status = $apiRequest->request_status;
+            $retry->prev_payment_status = $apiRequest->payment_status;
+            $retry->prev_response_code = $apiRequest->response_code;
+            $retry->prev_response_message = $apiRequest->response_message;
+            $retry->prev_updated_at = $apiRequest->updated_at;
+            $retry->save();
+
+            if ($lienResponse->status) {
+                $apiRequest->payment_status = Status::HELD;
+                $apiRequest->request_status = Status::PENDING;
+                $apiRequest->liened = true;
+
+                $apiRequest->response_code = ErrorCode::CODES['REQUEST_PROCESSING']['code'];
+                $apiRequest->response_message = ErrorCode::CODES['REQUEST_PROCESSING']['message'];
+            }else{
+                $apiRequest->payment_status =  Status::FAILED;
+                $apiRequest->request_status = Status::FAILED;
+                $apiRequest->liened = false;
+
+                $apiRequest->response_code = ErrorCode::CODES['INSUFFICIENT_BALANCE']['code'];
+                $apiRequest->response_message = $lienResponse->message;
+            }   
         }
 
         return $apiRequest;

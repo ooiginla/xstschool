@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SmsController;
+use App\Http\Controllers\GeneralController;
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -25,5 +26,9 @@ Route::prefix('v1')->middleware('app.api.auth')->group(function () {
 
     Route::prefix('notifications')->group(function(){
         Route::post('/sms/single', [SmsController::class, 'sendSingle'])->name('sms.sendsingle');
+    });
+
+    Route::prefix('transactions')->group(function(){
+        Route::post('/retry', [GeneralController::class, 'retry'])->name('transactions.retry');
     });
 });

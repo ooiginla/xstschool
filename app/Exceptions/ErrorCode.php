@@ -22,6 +22,8 @@ class ErrorCode
     const PROVIDER_ERROR = 'PROVIDER_ERROR';
     const PROVIDER_UNKNOWN_RESPONSE = 'PROVIDER_UNKNOWN_RESPONSE';
     const PROVIDER_INVALID_PAYLOAD = 'PROVIDER_INVALID_PAYLOAD';
+    const UNABLE_TO_RETRY = 'UNABLE_TO_RETRY';
+    const UNABLE_TO_RETRY_STATUS_ISSUES = 'UNABLE_TO_RETRY_STATUS_ISSUES';
 
 
 
@@ -39,6 +41,8 @@ class ErrorCode
         'NO_PROVIDER_ACTIVE' =>         ['code' => 'ER104', 'message'=> 'No active service provider available at the moment', 'http_code' => 200],
         'INSUFFICIENT_BALANCE' =>       ['code' => 'ER105', 'message'=> 'Insufficient balance', 'http_code' => 200],
         'INVALID_PAYLOAD' =>            ['code' => 'ER106', 'message'=> 'Invalid Payload', 'http_code' => 200],
+        'UNABLE_TO_RETRY' =>            ['code' => 'ER112', 'message'=> 'Unable to retry, transaction archived', 'http_code' => 200],
+        'UNABLE_TO_RETRY_STATUS_ISSUES' => ['code' => 'ER113', 'message'=> 'Unable to retry, transaction is not in a retry state', 'http_code' => 200],
 
         'PROVIDER_INVALID_AUTH' =>      ['code' => 'ER107', 'message'=> 'Invalid auth on provider', 'http_code' => 200],
         'PROVIDER_OUT_OF_FUNDS' =>      ['code' => 'ER108', 'message'=> 'Out of funds on provider', 'http_code' => 200],

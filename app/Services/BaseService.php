@@ -10,8 +10,10 @@ use Illuminate\Support\Facades\Cache;
 use App\Models\ServiceProvider;
 use App\Models\ProviderTransaction;
 use App\Models\Provider;
+use App\Models\Business;
 use App\Models\Transaction;
 use App\Models\Account;
+use App\Models\RequestLog;
 use App\Exceptions\InternalAppException;
 use App\Exceptions\ErrorCode;
 use App\Services\Wallet\WalletService;
@@ -63,9 +65,54 @@ class BaseService
 
     public function setRequestPayload($data)
     {
-        $this->requestPayload = $data;
+       $retrieved_data =  $this->logRequestPayload($data);
+
+        if (isset($data['retry_action'])) {
+            $this->requestPayload = $retrieved_data;
+        }else{
+            $this->requestPayload = $data;
+        }
+        
         $this->apiRequestDto = new ApiRequestDto;
         $this->walletService = new WalletService();
+    }
+
+    public function logRequestPayload($data)
+    {
+        $payload = $data;
+        $payload['business'] = $payload['business']->id;
+        $client_ref = $payload['client_ref'];
+
+        if (!empty($client_ref) && isset($payload['retry_action']) && $payload['retry_action']) 
+        {
+            $request_log = RequestLog::where('business_id', $payload['business'])
+                                ->where('client_ref', $client_ref)
+                                ->first();
+
+            if(empty($request_log)){
+                throw new InternalAppException(ErrorCode::UNABLE_TO_RETRY);
+            }
+            
+            $request_data = json_decode($request_log->client_request, true)['payload'];
+            $request_data['business'] = Business::find($request_data['business']);
+            $request_data['retry_action'] = true;
+
+            return $request_data;
+        }
+
+        $data = [
+            'payload' =>  $payload,
+            'headers' => app('request')->header(),
+            'ip' => app('request')->ip()
+        ];
+
+        $request_log = RequestLog::create([
+            'business_id' => $payload['business'],
+            'client_ref' => $client_ref ?? '',
+            'client_request' => json_encode($data)
+        ]);
+
+        return null;
     }
 
     public function getValueNumber()
@@ -86,7 +133,13 @@ class BaseService
     public function logTransaction()
     {
         // Log Request 
+        $this->apiRequestDto->retry_action = $this->requestPayload['retry_action'] ?? false;
         $this->transaction = $this->apiRequestService->logRequest($this->apiRequestDto);
+    }
+
+    public function resetTransactionForReprocessing()
+    {
+
     }
 
     public function callServiceProvider()
@@ -119,7 +172,7 @@ class BaseService
                 'testing.com/*' => Http::response([
                     'status' => 'SUCCESS',
                     'response_code' => 'SUCCESSFUL',
-                    'response_message' => 'Sms successfully sent',
+                    'response_message' => 'Sms Sent',
                     'debit_business' => 'YES',
                     'provider_raw_data'=>'a4apple',
                     'data' => []
@@ -188,7 +241,7 @@ class BaseService
             $this->transaction->response_message = $this->adapterResponse['response_message'] ?? ErrorCode::CODES[$this->adapterResponse['response_code']]['message'];
         }else{
             $this->transaction->response_code = ErrorCode::CODES['PROVIDER_UNKNOWN_RESPONSE']['code'];
-            $this->transaction->response_message = ErrorCode::CODES['PROVIDER_UNKNOWN_RESPONSE']['response_message'];
+            $this->transaction->response_message = $this->adapterResponse['response_message'] ?? ErrorCode::CODES[$this->adapterResponse['response_code']]['message'];
             
             // Log a buginfo
         }
@@ -311,6 +364,7 @@ class BaseService
     
     public function logProviderResponse($providerTxn, $adapterResponse)
     {
+        $providerTxn->status = $adapterResponse['status'] ?? 'PENDING';
         $providerTxn->standard_response = json_encode($adapterResponse);
         $providerTxn->save();
     }

@@ -16,7 +16,7 @@ class SmsService extends BaseService implements IRequestService
     protected $category = 'PURCHASE';
      
 
-    public function singleSmsTransaction($data)
+    public function process($data)
     {
         return $this->processData($data);
     } 

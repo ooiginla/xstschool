@@ -17,5 +17,6 @@ class ApiRequestDto {
     public $amount;
     public $value_number;
     public $transaction;
+    public $retry_action;
 
 }
