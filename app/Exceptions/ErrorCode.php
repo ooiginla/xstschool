@@ -25,6 +25,8 @@ class ErrorCode
     const UNABLE_TO_RETRY = 'UNABLE_TO_RETRY';
     const UNABLE_TO_RETRY_STATUS_ISSUES = 'UNABLE_TO_RETRY_STATUS_ISSUES';
     const TRANSACTION_NOT_FOUND = 'TRANSACTION_NOT_FOUND';
+    const INVALID_ADAPTER_PAYLOAD = 'INVALID_ADAPTER_PAYLOAD';
+    const CANNOT_RESOLVE_ADAPTER = 'CANNOT_RESOLVE_ADAPTER';
 
 
 
@@ -46,12 +48,17 @@ class ErrorCode
         'UNABLE_TO_RETRY_STATUS_ISSUES' => ['code' => 'ER113', 'message'=> 'Unable to retry, transaction is not in a retry state, call get status', 'http_code' => 200],
         'TRANSACTION_NOT_FOUND' =>      ['code' => 'ER114', 'message'=> 'Transaction not found', 'http_code' => 200],
 
+        // ADAPTER
+        'INVALID_ADAPTER_PAYLOAD' => ['code' => 'ER115', 'message'=> 'Invalid Payload', 'http_code' => 200],
+        'CANNOT_RESOLVE_ADAPTER' => ['code' => 'ER116', 'message'=> 'Unable to resolve adapter class', 'http_code' => 200],
+
         'PROVIDER_INVALID_AUTH' =>      ['code' => 'ER107', 'message'=> 'Invalid auth on provider', 'http_code' => 200],
         'PROVIDER_OUT_OF_FUNDS' =>      ['code' => 'ER108', 'message'=> 'Out of funds on provider', 'http_code' => 200],
         'PROVIDER_ERROR' =>             ['code' => 'ER109', 'message'=> 'Error on provider', 'http_code' => 200],
         'PROVIDER_UNKNOWN_RESPONSE' =>  ['code' => 'ER110', 'message'=> 'Provider sent an unknown response', 'http_code' => 200],
         'PROVIDER_INVALID_PAYLOAD' =>   ['code' => 'ER111', 'message'=> 'Invalid payload sent to provider', 'http_code' => 200],
 
+        
     ];
 }
    

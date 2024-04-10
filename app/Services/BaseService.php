@@ -163,7 +163,7 @@ class BaseService
             $this->loadProvidersIntoCache();
 
             $serviceProvider = $this->chooseAdapter();
-            $adapter_payload = $this->adapterRequestDto;
+
             $endpoint = $serviceProvider->adapter_url;
         }
 
@@ -176,13 +176,17 @@ class BaseService
                                 ->where('provider_id', $provider_transaction->provider_id)
                                 ->first();
             
-            $adapter_payload = $this->prepareGetStatusAdapterRequest();
+            $this->adapterRequestDto = $this->prepareGetStatusAdapterRequest();
             $endpoint = $serviceProvider->status_url;
         }
 
         if (empty($serviceProvider)) {
             throw new InternalAppException(ErrorCode::NO_PROVIDER_ACTIVE);
         }
+
+        // UpdateAdapter payload
+        $this->adapterRequestDto['provider'] = $serviceProvider->provider->code;
+        $this->adapterRequestDto['service_name'] = $serviceProvider->service->name;
 
         // Log provider request
         $providerTxn = $this->logProviderRequest($serviceProvider, $action);
@@ -195,6 +199,8 @@ class BaseService
         
 
         try{
+
+            dd($this->adapterRequestDto);
             $success = [
                 'testing.com/*' => Http::response([
                     'status' => 'SUCCESS',

@@ -45,11 +45,11 @@ class SmsService extends BaseService implements IRequestService
     {
         $this->adapterRequestDto = [
             'transaction_id' => $this->transaction->oystr_ref,
+            'provider' => 'default',
             'phonenumber' => $this->requestPayload['phonenumber'],
             'subject' => $this->requestPayload['subject'] ?? '',
             'message' => $this->requestPayload['message'] ?? '',
             'sender' => $this->requestPayload['sender'] ?? '',
-            'provider' => 'default'
         ];
     }
 
