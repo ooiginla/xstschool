@@ -90,7 +90,7 @@ class BaseService
                                 ->first();
 
             if(empty($request_log)){
-                throw new InternalAppException(ErrorCode::UNABLE_TO_RETRY);
+                throw new InternalAppException(ErrorCode::TRANSACTION_NOT_FOUND);
             }
             
             $request_data = json_decode($request_log->client_request, true)['payload'];
@@ -168,7 +168,7 @@ class BaseService
         $adapterResponse = null;
 
         try{
-            $adapterResponse = Http::fake([
+            $success = [
                 'testing.com/*' => Http::response([
                     'status' => 'SUCCESS',
                     'response_code' => 'SUCCESSFUL',
@@ -176,11 +176,25 @@ class BaseService
                     'debit_business' => 'YES',
                     'provider_raw_data'=>'a4apple',
                     'data' => []
-                ], 200, ['Headers']),
-            ])
-            ->acceptJson()
-            ->withToken($this->getToken())
-            ->post( $serviceProvider->adapter_url, $this->adapterRequestDto);
+                ])
+            ];
+
+
+            $failure = [
+                'testing.com/*' => Http::response([
+                    'status' => 'FAILED',
+                    'response_code' => 'TRANSACTION_NOT_FOUND',
+                    'response_message' => 'Sms not sent',
+                    'debit_business' => 'NO',
+                    'provider_raw_data'=>'a4apple',
+                    'data' => []
+                ])
+            ];
+
+            $adapterResponse = Http::fake($success, 200, ['Headers'])
+                                ->acceptJson()
+                                ->withToken($this->getToken())
+                                ->post( $serviceProvider->adapter_url, $this->adapterRequestDto);
 
             $adapterResponse = $adapterResponse->json();
 
@@ -462,5 +476,26 @@ class BaseService
         $this->handleProviderResponse();
 
         return $this->sendFinalResponse();
+    }
+
+    public function getStatus($apiRequest)
+    {
+        $this->transaction = $apiRequest;
+
+        // Has final status
+        if ($this->transaction != Status::PENDING) 
+        {
+            // load adapter previous response
+            $this->callServiceProvider();
+
+            // Map props from adapter to final jsoon
+            $this->handleProviderResponse();
+
+            // Send Final Response
+            return $this->sendFinalResponse();
+        }
+
+        // Still Pending?
+        
     }
 }

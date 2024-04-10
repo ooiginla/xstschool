@@ -13,4 +13,9 @@ class Request extends Model
     {
         return $this->belongsTo(ProviderTransaction::class);
     }
+
+    public function service()
+    {
+        return $this->belongsTo(Service::class);
+    }
 }

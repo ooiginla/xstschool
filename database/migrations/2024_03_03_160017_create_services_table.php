@@ -18,6 +18,7 @@ return new class extends Migration
             $table->string('name')->nullable();
             $table->string('code')->nullable();
             $table->boolean('status');
+            $table->string('path')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

@@ -37,7 +37,7 @@ class SmsService extends BaseService implements IRequestService
         // Final Response Payload goes here
         // dd($this->adapterResponse);
         if (!empty($this->adapterResponse)) {
-            $this->serviceReturnedData['name'] = $this->adapterResponse['foo'] ?? '';
+            $this->serviceReturnedData['name'] = $this->adapterResponse['response_code'] ?? '';
         }
     }
 

@@ -30,5 +30,6 @@ Route::prefix('v1')->middleware('app.api.auth')->group(function () {
 
     Route::prefix('transactions')->group(function(){
         Route::post('/retry', [GeneralController::class, 'retry'])->name('transactions.retry');
+        Route::get('/status', [GeneralController::class, 'status'])->name('transactions.status');
     });
 });
