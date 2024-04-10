@@ -191,6 +191,9 @@ class BaseService
         // Log provider request
         $providerTxn = $this->logProviderRequest($serviceProvider, $action);
 
+        $this->adapterRequestDto['provider_transaction_id'] = $providerTxn->id;
+
+
         // Update Provider Txn on Request Object
         $this->transaction->provider_transaction_id = $providerTxn->id;
         $this->transaction->save();

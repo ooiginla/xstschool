@@ -6,33 +6,40 @@ use Illuminate\Http\Request;
 
 use App\Exceptions\InternalAppException;
 use App\Exceptions\ErrorCode;
+use App\ServiceProviders\FinalResponseDto;
 
 class AdapterController extends Controller
 {
-    
+
     public function processRequest(Request $request)
     {
+        $this->providerTransactionId = $request->provider_transaction_id;
+
         if(empty($request->transaction_id)){
-            return $this->returnResp(false, ErrorCode::INVALID_ADAPTER_PAYLOAD, "Transaction id field is empty");
+            return $this->returnResp(new FinalResponseDto(false, ErrorCode::INVALID_ADAPTER_PAYLOAD, "Transaction id field is empty"));
         }
 
         if(empty($request->provider)){
-            return $this->returnResp(false, ErrorCode::INVALID_ADAPTER_PAYLOAD, "Provider code field is empty");
+            return $this->returnResp(new FinalResponseDto(false, ErrorCode::INVALID_ADAPTER_PAYLOAD, "Provider code field is empty"));
         }
 
         if(empty($request->service_name)){
-            return $this->returnResp(false, ErrorCode::INVALID_ADAPTER_PAYLOAD, "Service name field is empty");
+            return $this->returnResp(new FinalResponseDto(false, ErrorCode::INVALID_ADAPTER_PAYLOAD, "Service name field is empty"));
+        }
+
+        if(empty($request->provider_transaction_id)){
+            return $this->returnResp(new FinalResponseDto(false, ErrorCode::INVALID_ADAPTER_PAYLOAD, "Unable to log provider transaction"));
         }
 
         $processor = $this->resolveProcessor($request->provider, $request->service_name);
 
         if(! $processor) {
-            return $this->returnResp(false, ErrorCode::CANNOT_RESOLVE_ADAPTER, "Unable to resolve adapter class");
+            return $this->returnResp(new FinalResponseDto(false, ErrorCode::CANNOT_RESOLVE_ADAPTER, "Unable to resolve adapter class"));
         }
 
         $data = $request->all();
 
-        return $processor->processStandardPayload($data);
+        return $this->returnResp($processor->processStandardPayload($data));
     } 
 
     public function resolveProcessor($provider, $service_name)
@@ -59,26 +66,16 @@ class AdapterController extends Controller
         return $classname;
     }
 
-    public function returnResp(
-            $request_status = false, 
-            $response_code = '',
-            $response_message = '',
-            $http_code = 200,
-            $data = [], 
-            $provider_raw_data = [], 
-            $debit_business = 'NO',
-            $status = 'FAILED',
-    ) 
+    public function returnResp($finalResponseDto) 
     {
-
         return response()->json([
-            'request_status' => $request_status,
-            'response_code' => $response_code,
-            'response_message' => $response_message,
-            'data' => $data,
-            'debit_business' => $debit_business,
-            'provider_raw_data'=> $provider_raw_data,
-            'status' => $status,
-        ], $http_code);
+            'request_status' => $finalResponseDto->request_status,
+            'response_code' => $finalResponseDto->response_code,
+            'response_message' => $finalResponseDto->response_message,
+            'data' => $finalResponseDto->data,
+            'debit_business' => $finalResponseDto->debit_business,
+            'provider_raw_data'=> $finalResponseDto->provider_raw_data,
+            'status' => $finalResponseDto->status,
+        ], $finalResponseDto->http_code);
     }
 }

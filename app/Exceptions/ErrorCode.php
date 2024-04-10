@@ -27,6 +27,8 @@ class ErrorCode
     const TRANSACTION_NOT_FOUND = 'TRANSACTION_NOT_FOUND';
     const INVALID_ADAPTER_PAYLOAD = 'INVALID_ADAPTER_PAYLOAD';
     const CANNOT_RESOLVE_ADAPTER = 'CANNOT_RESOLVE_ADAPTER';
+    const PROVIDER_FAILED_TRANSACTION = 'PROVIDER_FAILED_TRANSACTION';
+    const CANNOT_LOG_TRANSACTION = 'CANNOT_LOG_TRANSACTION';
 
 
 
@@ -51,12 +53,15 @@ class ErrorCode
         // ADAPTER
         'INVALID_ADAPTER_PAYLOAD' => ['code' => 'ER115', 'message'=> 'Invalid Payload', 'http_code' => 200],
         'CANNOT_RESOLVE_ADAPTER' => ['code' => 'ER116', 'message'=> 'Unable to resolve adapter class', 'http_code' => 200],
+        'PROVIDER_FAILED_TRANSACTION' =>   ['code' => 'ER117', 'message'=> 'Invalid payload sent to provider', 'http_code' => 200],
+        'CANNOT_LOG_TRANSACTION' =>   ['code' => 'ER118', 'message'=> 'Unable to log provider transaction', 'http_code' => 200],
 
         'PROVIDER_INVALID_AUTH' =>      ['code' => 'ER107', 'message'=> 'Invalid auth on provider', 'http_code' => 200],
         'PROVIDER_OUT_OF_FUNDS' =>      ['code' => 'ER108', 'message'=> 'Out of funds on provider', 'http_code' => 200],
         'PROVIDER_ERROR' =>             ['code' => 'ER109', 'message'=> 'Error on provider', 'http_code' => 200],
         'PROVIDER_UNKNOWN_RESPONSE' =>  ['code' => 'ER110', 'message'=> 'Provider sent an unknown response', 'http_code' => 200],
         'PROVIDER_INVALID_PAYLOAD' =>   ['code' => 'ER111', 'message'=> 'Invalid payload sent to provider', 'http_code' => 200],
+        
 
         
     ];
