@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedInteger('request_id');
             $table->unsignedInteger('service_id');
             $table->unsignedInteger('provider_id');
+            $table->string('action')->nullable();
             $table->string('provider_ref')->nullable();
             $table->string('standard_request')->nullable();
             $table->string('standard_response')->nullable();

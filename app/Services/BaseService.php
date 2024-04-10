@@ -20,6 +20,7 @@ use App\Services\Wallet\WalletService;
 use App\Services\Wallet\Ledger;
 use App\Services\Transactions\TransactionDto;
 use App\Services\Transactions\Status;
+use App\Services\Transactions\Action;
 use Illuminate\Http\Client\ConnectionException;
 
 class BaseService
@@ -142,7 +143,14 @@ class BaseService
 
     }
 
-    public function callServiceProvider()
+    protected function prepareGetStatusAdapterRequest()
+    {
+        $this->adapterRequestDto = [
+            'reference' => $this->transaction->oystr_ref
+        ];
+    }
+
+    public function callServiceProvider($action = Action::PURCHASE)
     {
         // Has final status previously? Don't call provider again
         if ($this->transaction->request_status != Status::PENDING) {
@@ -150,22 +158,41 @@ class BaseService
             return;
         }
 
+        // FOR PURCHASES
+        if ($action == Action::PURCHASE) {
+            $this->loadProvidersIntoCache();
 
-        $this->loadProvidersIntoCache();
-        $serviceProvider = $this->chooseAdapter();
+            $serviceProvider = $this->chooseAdapter();
+            $adapter_payload = $this->adapterRequestDto;
+            $endpoint = $serviceProvider->adapter_url;
+        }
 
-        if(empty($serviceProvider)){
+        // FOR GET STATUS
+        if ($action == Action::GET_STATUS) {
+
+            $provider_transaction = $this->transaction->providerTransaction;
+
+            $serviceProvider = ServiceProvider::where('service_id', $provider_transaction->service_id)
+                                ->where('provider_id', $provider_transaction->provider_id)
+                                ->first();
+            
+            $adapter_payload = $this->prepareGetStatusAdapterRequest();
+            $endpoint = $serviceProvider->status_url;
+        }
+
+        if (empty($serviceProvider)) {
             throw new InternalAppException(ErrorCode::NO_PROVIDER_ACTIVE);
         }
 
         // Log provider request
-        $providerTxn = $this->logProviderRequest($serviceProvider);
+        $providerTxn = $this->logProviderRequest($serviceProvider, $action);
 
         // Update Provider Txn on Request Object
         $this->transaction->provider_transaction_id = $providerTxn->id;
         $this->transaction->save();
 
         $adapterResponse = null;
+        
 
         try{
             $success = [
@@ -179,6 +206,16 @@ class BaseService
                 ])
             ];
 
+            $pending = [
+                'testing.com/*' => Http::response([
+                    'status' => 'PENDING',
+                    'response_code' => 'CONNECTION_TIMEOUT',
+                    'response_message' => 'Connection Timeout',
+                    'debit_business' => 'NO',
+                    'provider_raw_data'=>'a4apple',
+                    'data' => []
+                ])
+            ];
 
             $failure = [
                 'testing.com/*' => Http::response([
@@ -194,7 +231,7 @@ class BaseService
             $adapterResponse = Http::fake($success, 200, ['Headers'])
                                 ->acceptJson()
                                 ->withToken($this->getToken())
-                                ->post( $serviceProvider->adapter_url, $this->adapterRequestDto);
+                                ->post($endpoint, $this->adapterRequestDto);
 
             $adapterResponse = $adapterResponse->json();
 
@@ -274,11 +311,11 @@ class BaseService
     {
         $transactionDto =  new TransactionDto;
         $transactionDto->request_id = $this->transaction->id;
-        $transactionDto->business_id = $this->requestPayload['business']->id;
+        $transactionDto->business_id = $this->transaction->business_id;
         $transactionDto->reference = $this->transaction->oystr_ref;
-        $transactionDto->value_number = $this->getValueNumber();
+        $transactionDto->value_number = $this->transaction->value_number;
         $transactionDto->currency = $this->getCurrency();
-        $transactionDto->narration = $this->getNarration();
+        $transactionDto->narration = $this->transaction->narration;
         $transactionDto->category = 'api-request';
         $transactionDto->type = 'DEBIT';
         $transactionDto->amount = $this->transaction->client_price;
@@ -299,7 +336,7 @@ class BaseService
             'DEBIT', 
             $account->account_no, 
             $this->transaction->client_price, 
-            $this->getNarration(), 
+            $this->transaction->narration, 
             'REGULAR'
         );
     }
@@ -317,7 +354,7 @@ class BaseService
             'CREDIT', 
             $account->account_no, 
             $this->transaction->client_price, 
-            $this->getNarration(), 
+            $this->transaction->narration,
             'REGULAR'
         );
     }
@@ -336,7 +373,7 @@ class BaseService
         $creditLedger = $this->getCreditLedger();
 
         $walletResponse = $this->walletService->post(
-            $this->requestPayload['business']->id,
+            $this->transaction->business_id,
             1,
             $this->transaction->oystr_ref,
             $this->transaction->client_price,
@@ -383,12 +420,13 @@ class BaseService
         $providerTxn->save();
     }
 
-    public function logProviderRequest($serviceProvider)
+    public function logProviderRequest($serviceProvider, $action)
     {
         $providerTxn = new ProviderTransaction;
         $providerTxn->request_id = $this->transaction->id;
         $providerTxn->service_id = $serviceProvider->service_id;
         $providerTxn->provider_id = $serviceProvider->provider_id;
+        $providerTxn->action = $action;
         $providerTxn->standard_request = json_encode($this->adapterRequestDto);
         $providerTxn->save();
 
@@ -482,20 +520,15 @@ class BaseService
     {
         $this->transaction = $apiRequest;
 
-        // Has final status
-        if ($this->transaction != Status::PENDING) 
-        {
-            // load adapter previous response
-            $this->callServiceProvider();
+        $this->walletService = new WalletService();
 
-            // Map props from adapter to final jsoon
-            $this->handleProviderResponse();
+        // load adapter previous response
+        $this->callServiceProvider(Action::GET_STATUS);
 
-            // Send Final Response
-            return $this->sendFinalResponse();
-        }
+        // Map props from adapter to final jsoon
+        $this->handleProviderResponse();
 
-        // Still Pending?
-        
+        // Send Final Response
+        return $this->sendFinalResponse(); 
     }
 }
