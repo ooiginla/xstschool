@@ -15,13 +15,13 @@ interface IServiceProvider
 
     public function processStandardPayload($standardPayload);
     public function mapStandardToAdapterRequest();
-    public function mapAdapterResponseToStandard();
-    public function makePurchase();
-    public function getStatus();
+    public function mapAdapterResponseToStandard($response);
+    public function purchase();
+    public function get_status();
     public function validateParams();
-
-    public function handleSuccessResponse();
-    public function handleFailedResponse();
-    public function handlePendingResponse();
+    public function handleSuccessResponse($response);
+    public function handleFailedResponse($response);
+    public function handlePendingResponse($response);
+    public function determineTransactionStatus($response);
 }
    

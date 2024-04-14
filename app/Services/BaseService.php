@@ -521,7 +521,7 @@ class BaseService
         $this->prepareAdapterRequest();
         $this->callServiceProvider();
         $this->handleProviderResponse();
-
+ 
         return $this->sendFinalResponse();
     }
 
