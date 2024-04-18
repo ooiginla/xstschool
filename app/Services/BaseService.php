@@ -22,6 +22,7 @@ use App\Services\Transactions\TransactionDto;
 use App\Services\Transactions\Status;
 use App\Services\Transactions\Action;
 use Illuminate\Http\Client\ConnectionException;
+use App\Services\Responses\BusinessResponseDto;
 
 class BaseService
 {
@@ -187,6 +188,8 @@ class BaseService
             $this->adapterRequestDto = $this->prepareGetStatusAdapterRequest();
             $endpoint = $serviceProvider->status_url;
         }
+
+
 
         if (empty($serviceProvider)) {
             throw new InternalAppException(ErrorCode::NO_PROVIDER_ACTIVE);
@@ -521,18 +524,38 @@ class BaseService
         }
     }
 
-    public function sendFinalResponse()
+    public function sendFinalResponseDto()
     {
         $this->transaction->refresh();
 
-        $response['status'] = true;
-        $response['code'] = $this->transaction->response_code;
-        $response['message'] = $this->transaction->response_message;
-        $response['data'] = $this->serviceReturnedData ?? [];
-        $response['provider_data'] = $this->adapterResponse['provider_raw_data'] ?? [];
+        $dto = new BusinessResponseDto(true, $this->transaction->response_code, $this->transaction->response_message);
+        $dto->provider_data = $this->adapterResponse['provider_raw_data'] ?? [];
+        $dto->http_code = 200;
+        
+        $service_data = $this->serviceReturnedData ?? [];
+        
+        $data = [
+            'client_reference' => $this->transaction->client_ref,
+            'debited' => ((int)$this->transaction->debited) ? true:false,
+            'transaction_status' => $this->transaction->request_status,
+            'payment_status' => $this->transaction->payment_status,
+            'currency' => $this->transaction->currency,
+            'amount' => number_format((float)$this->transaction->client_price, 2, '.', ''),
+            'action' => 'PURCHASE',
+            'provider' => $this->transaction->providerTransaction->provider->code,
+            'value_number' => $this->transaction->value_number,
+            'narration' => $this->transaction->narration,
+            'category' => $this->transaction->category."::".$this->transaction->subcategory,
+            'adapter_reference' => $this->transaction->oystr_ref,
+            'provider_reference' => $this->transaction->providerTransaction->provider_ref,
+            'created_at' => $this->transaction->created_at,
+            'service_data' => array_merge([], $service_data),
+            'provider_response' => $this->adapterResponse['provider_raw_data'],
+        ];
 
+        $dto->data = $data;
 
-        return response()->json($response, 200);
+        return $dto;
     }
 
     public function processData($data)
@@ -544,7 +567,9 @@ class BaseService
         $this->callServiceProvider();
         $this->handleProviderResponse();
  
-        return $this->sendFinalResponse();
+        $finalDto = $this->sendFinalResponseDto();
+
+        return $finalDto;
     }
 
     public function getStatus($apiRequest)

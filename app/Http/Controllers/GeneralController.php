@@ -11,6 +11,8 @@ use App\Models\Request as ApiRequest;
 use App\Exceptions\InternalAppException;
 use App\Exceptions\ErrorCode;
 use App\Services\Requests\ApiRequestService;
+use App\Models\Account;
+use App\Services\Responses\BusinessResponseDto;
 
 class GeneralController extends Controller
 {
@@ -68,4 +70,31 @@ class GeneralController extends Controller
 
         return $service->getStatus($apiRequest);
     }
-}
+
+    public function getBalance(Request $request)
+    {
+        $data = $request->all();
+
+        $account = Account::where('business_id', $data['business']->id)->first();
+
+        $dto = new BusinessResponseDto(true, ErrorCode::SUCCESSFUL , 'Balance successfully retrieved');
+        $dto->provider_data = [];
+        $dto->http_code = 200;
+        
+        $data = [
+            'account_number' => $account->account_no,
+            'account_name' => $account->account_name,
+            'currency' => $account->currency,
+            'balance' => number_format((float)$account->balance, 2, '.', ''),
+            'account_type' => ((int)$account->account_type == 1) ? 'REGULAR':'GL',
+            'overdraw_allowed' => ((int) $account->can_overdraw) ? true:false,
+            'overdraw_limit' => $account->overdraw_limit,
+            'liened_amount' => $account->liened_amount,
+            'last_updated' => $account->updated_at
+        ];
+
+        $dto->data = $data;
+
+        return $this->sendFinalResponse($dto);
+    }
+}$

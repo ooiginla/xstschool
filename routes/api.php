@@ -27,6 +27,11 @@ Route::prefix('v1/adapters')->group(function(){
 
 Route::prefix('v1')->middleware('app.api.auth')->group(function () 
 {
+    Route::prefix('business')->group(function() {
+        Route::get('/account/balance', [GeneralController::class, 'getBalance'])->name('account.balance');
+    });
+
+
     Route::get('/testing', function (Request $request) {
         return "hello";
     });
