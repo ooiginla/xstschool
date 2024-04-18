@@ -146,8 +146,10 @@ class BaseService
     protected function prepareGetStatusAdapterRequest()
     {
         $this->adapterRequestDto = [
-            'reference' => $this->transaction->oystr_ref
+            'transaction_id' => $this->transaction->oystr_ref
         ];
+
+        return $this->adapterRequestDto;
     }
 
     public function callServiceProvider($action = Action::PURCHASE)
@@ -170,6 +172,12 @@ class BaseService
         // FOR GET STATUS
         if ($action == Action::GET_STATUS) {
 
+            // Check if implementation of get status does not exists..
+            if (empty($serviceProvider->status_url)) {
+                $this->adapterResponse = json_decode($this->transaction?->providerTransaction?->standard_response, true);
+                return;
+            }
+            
             $provider_transaction = $this->transaction->providerTransaction;
 
             $serviceProvider = ServiceProvider::where('service_id', $provider_transaction->service_id)
@@ -202,8 +210,7 @@ class BaseService
         
 
         try{
-
-            dd($this->adapterRequestDto);
+            /*
             $success = [
                 'testing.com/*' => Http::response([
                     'status' => 'SUCCESS',
@@ -241,8 +248,22 @@ class BaseService
                                 ->acceptJson()
                                 ->withToken($this->getToken())
                                 ->post($endpoint, $this->adapterRequestDto);
+            
+                DELETE FROM wallet_transactions;
+                DELETE FROM transactions;
+                DELETE FROM retries;
+                DELETE FROM requests;
+                DELETE FROM request_logs;
+                DELETE FROM provider_transactions;
+                DELETE FROM histories;
+            */
+
+            $adapterResponse = Http::acceptJson()
+                                    ->withToken($this->getToken())
+                                    ->post($endpoint, $this->adapterRequestDto);
 
             $adapterResponse = $adapterResponse->json();
+
 
         }catch(ConnectionException $ex){
             throw new InternalAppException(ErrorCode::CONNECTION_TIMEOUT);
@@ -433,6 +454,7 @@ class BaseService
     {
         $providerTxn = new ProviderTransaction;
         $providerTxn->request_id = $this->transaction->id;
+        $providerTxn->own_reference = $this->transaction->oystr_ref;
         $providerTxn->service_id = $serviceProvider->service_id;
         $providerTxn->provider_id = $serviceProvider->provider_id;
         $providerTxn->action = $action;

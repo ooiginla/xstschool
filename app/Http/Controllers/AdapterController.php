@@ -11,25 +11,37 @@ use App\ServiceProviders\FinalResponseDto;
 class AdapterController extends Controller
 {
 
+    public function validateProps($request)
+    {
+        if(empty($request->input('transaction_id'))){
+            return new FinalResponseDto(false, ErrorCode::INVALID_ADAPTER_PAYLOAD, "Transaction id field is empty");
+        }
+
+        if(empty($request->input('provider'))){
+            return new FinalResponseDto(false, ErrorCode::INVALID_ADAPTER_PAYLOAD, "Provider code field is empty");
+        }
+
+        if(empty($request->input('service_name'))){
+            return new FinalResponseDto(false, ErrorCode::INVALID_ADAPTER_PAYLOAD, "Service name field is empty");
+        }
+
+        if(empty($request->input('provider_transaction_id'))){
+            return new FinalResponseDto(false, ErrorCode::INVALID_ADAPTER_PAYLOAD, "Unable to log provider transaction");
+        }
+
+        return null;
+    }
+
     public function processRequest(Request $request)
     {
+        $finalResponseDto = $this->validateProps($request);
+
+        if(!empty($finalResponseDto)) {
+            return $this->returnResp($finalResponseDto);
+        }
+
         $this->providerTransactionId = $request->provider_transaction_id;
 
-        if(empty($request->transaction_id)){
-            return $this->returnResp(new FinalResponseDto(false, ErrorCode::INVALID_ADAPTER_PAYLOAD, "Transaction id field is empty"));
-        }
-
-        if(empty($request->provider)){
-            return $this->returnResp(new FinalResponseDto(false, ErrorCode::INVALID_ADAPTER_PAYLOAD, "Provider code field is empty"));
-        }
-
-        if(empty($request->service_name)){
-            return $this->returnResp(new FinalResponseDto(false, ErrorCode::INVALID_ADAPTER_PAYLOAD, "Service name field is empty"));
-        }
-
-        if(empty($request->provider_transaction_id)){
-            return $this->returnResp(new FinalResponseDto(false, ErrorCode::INVALID_ADAPTER_PAYLOAD, "Unable to log provider transaction"));
-        }
 
         $processor = $this->resolveProcessor($request->provider, $request->service_name);
 
@@ -78,4 +90,27 @@ class AdapterController extends Controller
             'status' => $finalResponseDto->status,
         ], $finalResponseDto->http_code);
     }
+
+    public function statusRequest(Request $request)
+    {
+        $finalResponseDto = $this->validateProps($request);
+
+        if(!empty($finalResponseDto)) {
+            return $this->returnResp($finalResponseDto);
+        }
+
+        $this->providerTransactionId = $request->provider_transaction_id;
+
+
+        $processor = $this->resolveProcessor($request->provider, $request->service_name);
+
+        if(! $processor) {
+            return $this->returnResp(new FinalResponseDto(false, ErrorCode::CANNOT_RESOLVE_ADAPTER, "Unable to resolve adapter class"));
+        }
+
+        $data = $request->all();
+
+        return $this->returnResp($processor->processStandardPayload($data));
+    }
+    
 }

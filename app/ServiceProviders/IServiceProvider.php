@@ -23,5 +23,6 @@ interface IServiceProvider
     public function handleFailedResponse($response);
     public function handlePendingResponse($response);
     public function determineTransactionStatus($response);
+    public function getProviderReference($response);
 }
    

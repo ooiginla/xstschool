@@ -22,6 +22,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::prefix('v1/adapters')->group(function(){
     Route::post('/purchase', [AdapterController::class, 'processRequest'])->name('adapater.processRequest');
+    Route::post('/status', [AdapterController::class, 'statusRequest'])->name('adapater.status');
 });
 
 Route::prefix('v1')->middleware('app.api.auth')->group(function () 

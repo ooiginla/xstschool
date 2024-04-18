@@ -17,11 +17,13 @@ return new class extends Migration
             $table->unsignedInteger('service_id');
             $table->unsignedInteger('provider_id');
             $table->string('action')->nullable();
+            $table->string('own_reference',50)->nullable();
             $table->string('provider_ref')->nullable();
-            $table->string('standard_request')->nullable();
-            $table->string('standard_response')->nullable();
-            $table->string('provider_request')->nullable();
-            $table->string('provider_response')->nullable();
+            $table->mediumText('standard_request')->nullable();
+            $table->mediumText('standard_response')->nullable();
+            $table->mediumText('provider_request')->nullable();
+            $table->string('provider_httpcode')->nullable();
+            $table->mediumText('provider_response')->nullable();
             $table->string('status')->default('PENDING');
             $table->timestampsTz();
         });

@@ -7,12 +7,21 @@ use App\ServiceProviders\IServiceProvider;
 use App\Exceptions\ErrorCode;
 use App\ServiceProviders\FinalResponseDto;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class SendSms extends BaseService implements IServiceProvider{
 
-    protected $endpoint = '/sms/create';
+    protected $purchase_endpoint = '/sms/create';
     protected $purchase_action = 'GET';
+
+    protected $status_endpoint = '/';
     protected $status_action = 'GET';
+
+    public function validateStatusParams()
+    {
+        $validated = true;
+        return $validated;
+    }
 
     public function validateParams()
     {
@@ -21,19 +30,27 @@ class SendSms extends BaseService implements IServiceProvider{
         if(!isset($this->standardPayload['phonenumber'])) {
             $validated = false;
             $this->finalResponseDto = new FinalResponseDto(false, ErrorCode::INVALID_ADAPTER_PAYLOAD, "phonenumber field is empty");
+            return $validated;
         }
 
         if(!isset($this->standardPayload['message'])) {
             $validated = false;
             $this->finalResponseDto =  new FinalResponseDto(false, ErrorCode::INVALID_ADAPTER_PAYLOAD, "message field is empty");
+            return $validated;
         }
 
         if(!isset($this->standardPayload['sender'])) {
             $validated = false;
             $this->finalResponseDto =  new FinalResponseDto(false, ErrorCode::INVALID_ADAPTER_PAYLOAD, "sender field is empty");
+            return $validated;
         }
 
         return $validated;
+    }
+
+    public function mapStandardToAdapterRequestStatus() 
+    {
+        $this->providerRequest['reference'] = '';
     }
      
     public function mapStandardToAdapterRequest() 
@@ -74,5 +91,14 @@ class SendSms extends BaseService implements IServiceProvider{
         }else{
             $this->setProviderTransactionStatus('FAILED');
         }
+    }
+
+    public function getProviderReference($response)
+    {
+        $data = $response->json();
+
+        $provider_reference = (($data['data'] && $data['data']['message_id'])) ? $data['data']['message_id'] :  null;
+
+        return $provider_reference;
     }
 }
