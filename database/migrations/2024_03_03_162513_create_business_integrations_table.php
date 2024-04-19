@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('password')->nullable();
             $table->string('public_api_key')->nullable();
             $table->string('private_api_key')->nullable();
+            $table->string('callback_url')->nullable();
             $table->boolean('status')->default(false);
             $table->boolean('allow_auto')->default(true);
             $table->timestampsTz();

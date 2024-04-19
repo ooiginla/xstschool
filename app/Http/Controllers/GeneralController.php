@@ -97,4 +97,4 @@ class GeneralController extends Controller
 
         return $this->sendFinalResponse($dto);
     }
-}$
+}

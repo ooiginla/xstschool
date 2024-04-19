@@ -30,6 +30,9 @@ class ErrorCode
     const PROVIDER_FAILED_TRANSACTION = 'PROVIDER_FAILED_TRANSACTION';
     const CANNOT_LOG_TRANSACTION = 'CANNOT_LOG_TRANSACTION';
     const CANNOT_SEE_PROVIDER_TRANSACTION = 'CANNOT_SEE_PROVIDER_TRANSACTION';
+    const TRANSFORMER_NOT_FOUND = 'TRANSFORMER_NOT_FOUND';
+    const NO_INTEGRATION_CONFIGURATION = 'NO_INTEGRATION_CONFIGURATION';
+    const INVALID_INTEGRATION_CREDENTIAL = 'INVALID_INTEGRATION_CREDENTIAL';
 
 
 
@@ -50,6 +53,13 @@ class ErrorCode
         'UNABLE_TO_RETRY' =>            ['code' => 'ER112', 'message'=> 'Unable to retry, transaction archived', 'http_code' => 200],
         'UNABLE_TO_RETRY_STATUS_ISSUES' => ['code' => 'ER113', 'message'=> 'Unable to retry, transaction is not in a retry state, call get status', 'http_code' => 200],
         'TRANSACTION_NOT_FOUND' =>      ['code' => 'ER114', 'message'=> 'Transaction not found', 'http_code' => 200],
+        'TRANSFORMER_NOT_FOUND' =>   ['code' => 'ER120', 'message'=> 'Unable to find request transformer', 'http_code' => 200],
+        'NO_INTEGRATION_CONFIGURATION' =>   ['code' => 'ER121', 'message'=> 'You are yet to setup your integration credential', 'http_code' => 200],
+        'INVALID_INTEGRATION_CREDENTIAL' =>   ['code' => 'ER122', 'message'=> 'Request credential keys do not match keys in integration setup', 'http_code' => 200],
+        
+
+    
+    
 
         // ADAPTER
         'INVALID_ADAPTER_PAYLOAD' => ['code' => 'ER115', 'message'=> 'Invalid Payload', 'http_code' => 200],
@@ -63,6 +73,7 @@ class ErrorCode
         'PROVIDER_ERROR' =>             ['code' => 'ER109', 'message'=> 'Error on provider', 'http_code' => 200],
         'PROVIDER_UNKNOWN_RESPONSE' =>  ['code' => 'ER110', 'message'=> 'Provider sent an unknown response', 'http_code' => 200],
         'PROVIDER_INVALID_PAYLOAD' =>   ['code' => 'ER111', 'message'=> 'Invalid payload sent to provider', 'http_code' => 200],
+        
         
 
         

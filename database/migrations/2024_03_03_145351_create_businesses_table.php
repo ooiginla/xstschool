@@ -19,7 +19,7 @@ return new class extends Migration
 
             $table->id();
             $table->string('name')->nullable();
-            $table->string('username')->nullable();
+            $table->string('username')->unique();
             $table->string('reg_no')->nullable();
             $table->string('category')->nullable();
             $table->string('phone')->nullable();

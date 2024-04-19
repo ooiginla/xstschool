@@ -25,6 +25,13 @@ Route::prefix('v1/adapters')->group(function(){
     Route::post('/status', [AdapterController::class, 'statusRequest'])->name('adapater.status');
 });
 
+Route::prefix('v1/transformers')->group(function()
+{
+    Route::prefix('notifications')->group(function() {
+        Route::any('/sms/send/{provider}', [SmsController::class, 'transform'])->name('sms.send.transform');
+    });
+});
+
 Route::prefix('v1')->middleware('app.api.auth')->group(function () 
 {
     Route::prefix('business')->group(function() {
@@ -37,7 +44,7 @@ Route::prefix('v1')->middleware('app.api.auth')->group(function ()
     });
 
     Route::prefix('notifications')->group(function() {
-        Route::post('/sms/single', [SmsController::class, 'sendSingle'])->name('sms.sendsingle');
+        Route::post('/sms/send', [SmsController::class, 'send'])->name('sms.send');
     });
 
     Route::prefix('transactions')->group(function() {

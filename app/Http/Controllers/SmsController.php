@@ -6,11 +6,13 @@ use Illuminate\Http\Request;
 
 use App\Services\Notifications\Sms\SmsService;
 use App\Services\Requests\ApiRequestDto;
+use App\Exceptions\InternalAppException;
+use App\Exceptions\ErrorCode; 
 
 class SmsController extends Controller
 {
 
-    public function sendSingle(Request $request, ApiRequestDto $apiRequestDto, SmsService $smsService, )
+    public function send(Request $request, ApiRequestDto $apiRequestDto, SmsService $smsService, )
     {
         $request->validate([
             'phonenumber' => 'required',
@@ -23,5 +25,25 @@ class SmsController extends Controller
         $finalResponseDto =  $smsService->process($data, $apiRequestDto);
 
         return $this->sendFinalResponse($finalResponseDto);
+    }
+
+    public function transform($provider, Request $request, ApiRequestDto $apiRequestDto, SmsService $smsService)
+    {
+        $classpath = "\\App\\Transformers\\".ucfirst($provider)."\\SendSms";
+
+        try{
+            $transformer = new $classpath();
+        }catch(\Throwable $e){
+            throw new InternalAppException(ErrorCode::TRANSFORMER_NOT_FOUND);
+        }
+
+        $request = $transformer->authenticate($request);
+
+        $standardReqest = $transformer->transformPurchaseRequest($request);
+
+        // call Standard controller
+        $response = $this->send($standardReqest, $apiRequestDto,$smsService);
+
+        return $transformer->transformPurchaseResponse($response);
     }
 }
