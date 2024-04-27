@@ -8,6 +8,7 @@ use App\Exceptions\ErrorCode;
 
 class BaseServiceProvider {
 
+    protected $credentials = null;
     protected $providerTransaction= null;
     protected $providerTransactionStatus = 'PENDING';
     protected $finalResponseDto;
@@ -26,8 +27,8 @@ class BaseServiceProvider {
         return $this->base_url;
     }
 
-    public function setAdditionalHeaders($headers=[]) {
-        $this->additionalHeaders = $headers;
+    public function setAdditionalHeaders() {
+        $this->additionalHeaders = [];
     }
 
     public function getAdditionalHeaders() {
@@ -42,7 +43,8 @@ class BaseServiceProvider {
         return $this->providerTransactionStatus;
     }
 
-    public function setProviderTransactionStatus($status) {
+    public function setProviderTransactionStatus($status) 
+    {
         if($status && in_array($status, ['PENDING','SUCCESS','FAILED'])) 
         { 
             return $this->providerTransactionStatus = $status;
@@ -140,6 +142,11 @@ class BaseServiceProvider {
         return true;
     }
 
+    public function init()
+    {
+
+    }
+
     public function processStandardPayload($standardPayload) 
     {
         $this->standardPayload = $standardPayload;
@@ -156,6 +163,10 @@ class BaseServiceProvider {
         if (! $action_response) {
             return $this->finalResponseDto;
         }
+
+        $this->init();
+
+        $this->setAdditionalHeaders();
 
         $this->saveProviderRequest();
 
@@ -185,7 +196,6 @@ class BaseServiceProvider {
 
     public function callClient($verb, $endpoint) 
     {
-
         $httpReq = Http::acceptJson()->withHeaders($this->getAdditionalHeaders());
 
         $fullUrl = $this->getBaseUrl() . $endpoint;
@@ -209,6 +219,8 @@ class BaseServiceProvider {
             $response = null;
 
         }
+
+       // dd($response->clientError());
 
         return $response;
     }

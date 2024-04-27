@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
 use App\Models\ServiceProvider;
 use App\Models\ProviderTransaction;
+use App\Models\BusinessIntegration;
 use App\Models\Provider;
 use App\Models\Business;
 use App\Models\Transaction;
@@ -165,9 +166,28 @@ class BaseService
         if ($action == Action::PURCHASE) {
             $this->loadProvidersIntoCache();
 
-            $serviceProvider = $this->chooseAdapter();
+            $selectedProvider = $this->chooseAdapter($this->serviceObject->name);
 
-            $endpoint = $serviceProvider->adapter_url;
+            if (empty($selectedProvider)) {
+                throw new InternalAppException(ErrorCode::NO_PROVIDER_ACTIVE);
+            }
+
+            // UpdateAdapter payload
+            $this->adapterRequestDto['provider'] = $selectedProvider['code'];
+            $this->adapterRequestDto['integration_id'] = $selectedProvider['integration_id'];
+            $this->adapterRequestDto['service_name'] = $this->serviceObject->name;
+            $this->adapterRequestDto['sa_business'] =  $this->requestPayload['business']->username;
+            $this->adapterRequestDto['mock_response'] =  'failed';
+
+             // Log provider request
+            $providerTxn = $this->logProviderRequest(
+                                $this->serviceObject->id, 
+                                $selectedProvider['provider_id'], 
+                                $selectedProvider['integration_id'], 
+                                $action
+                            );
+            
+            $endpoint = 'http://127.0.0.1:8001/api/v1/adapters/purchase';
         }
 
         // FOR GET STATUS
@@ -180,30 +200,27 @@ class BaseService
             }
             
             $provider_transaction = $this->transaction->providerTransaction;
-
-            $serviceProvider = ServiceProvider::where('service_id', $provider_transaction->service_id)
-                                ->where('provider_id', $provider_transaction->provider_id)
-                                ->first();
             
             $this->adapterRequestDto = $this->prepareGetStatusAdapterRequest();
-            $endpoint = $serviceProvider->status_url;
+
+            // UpdateAdapter payload
+            $this->adapterRequestDto['provider'] = $serviceProvider->provider->code;
+            $this->adapterRequestDto['integration_id'] = $serviceProvider->provider->code;
+            $this->adapterRequestDto['service_name'] = $serviceProvider->service->name;
+            $this->adapterRequestDto['sa_business'] =  $this->requestPayload['business']->username;
+
+            // Log provider request
+            $providerTxn = $this->logProviderRequest(
+                                $provider_transaction->service_id,
+                                $provider_transaction->provider_id,
+                                $provider_transaction->business_integration_id,
+                                $action
+                            );
+            
+            $endpoint = 'http://testing.com/adapter/notification/sms/status';
         }
-
-
-
-        if (empty($serviceProvider)) {
-            throw new InternalAppException(ErrorCode::NO_PROVIDER_ACTIVE);
-        }
-
-        // UpdateAdapter payload
-        $this->adapterRequestDto['provider'] = $serviceProvider->provider->code;
-        $this->adapterRequestDto['service_name'] = $serviceProvider->service->name;
-
-        // Log provider request
-        $providerTxn = $this->logProviderRequest($serviceProvider, $action);
 
         $this->adapterRequestDto['provider_transaction_id'] = $providerTxn->id;
-
 
         // Update Provider Txn on Request Object
         $this->transaction->provider_transaction_id = $providerTxn->id;
@@ -211,7 +228,6 @@ class BaseService
 
         $adapterResponse = null;
         
-
         try{
             /*
             $success = [
@@ -266,8 +282,6 @@ class BaseService
                                     ->post($endpoint, $this->adapterRequestDto);
 
             $adapterResponse = $adapterResponse->json();
-
-
         }catch(ConnectionException $ex){
             throw new InternalAppException(ErrorCode::CONNECTION_TIMEOUT);
         }catch(Exception $ex){
@@ -453,13 +467,14 @@ class BaseService
         $providerTxn->save();
     }
 
-    public function logProviderRequest($serviceProvider, $action)
+    public function logProviderRequest($service_id, $provider_id, $integration_id, $action)
     {
         $providerTxn = new ProviderTransaction;
         $providerTxn->request_id = $this->transaction->id;
         $providerTxn->own_reference = $this->transaction->oystr_ref;
-        $providerTxn->service_id = $serviceProvider->service_id;
-        $providerTxn->provider_id = $serviceProvider->provider_id;
+        $providerTxn->service_id = $service_id;
+        $providerTxn->provider_id = $provider_id;
+        $providerTxn->business_integration_id = $integration_id;
         $providerTxn->action = $action;
         $providerTxn->standard_request = json_encode($this->adapterRequestDto);
         $providerTxn->save();
@@ -472,32 +487,44 @@ class BaseService
         return config('app.env'). '_' . '4d66a5b1-0b25-4248-b833-50396d19aab2';
     }
 
-    public function chooseAdapter()
-    {
+    public function chooseAdapter($service_name, $retry = false)
+    {   
+        // Get all integration owners of the service
         $providers = Cache::get($this->service_name);
-        
+
+        // internal_providers
+        $internal_providers = array_filter($providers, function ($k){
+                return (str_starts_with($k['owner'], 'INTERNAL'));
+        });
+
+        // client_providers
+        $client_providers = array_filter($providers, function ($k){
+            return(str_starts_with($k['owner'], 'CLIENT'));
+        });
+
+        // USE ONLY INTERNAL FOR NOW
+        $providers = $internal_providers;
+
         $max_provider = null;
         $max_success_rate = 0;
 
-        foreach($providers as $provider => $data){
-            if ($data['success_rate'] >= $max_success_rate && $data['status']) {
-                $max_success_rate = $data['success_rate'];
+
+        // GET BEST SUCCESS RATE
+        foreach ($providers as $provider) {
+            if ($provider['success_rate'] >= $max_success_rate && $provider['status']) {
+                $max_success_rate = $provider['success_rate'];
                 $max_provider = $provider;
             }
         }
-
-
-        $provider_id = Provider::where('code', $max_provider)->value('id');
-
-        return ServiceProvider::where('service_id', $this->serviceObject->id)
-                            ->where('provider_id', $provider_id)
-                            ->first();
+        
+        return $max_provider;
         /*
-            SERVICE_NAME:[
+            'SERVICE_NAME':[
                 'PROVIDER' => [
                     'success': 20
                     'failure': 4,
-                    'status': active
+                    'status': active,
+                    'success_rate': 80
                 ]
             ],
             SERVICE_NAME:['']
@@ -507,19 +534,59 @@ class BaseService
     public function loadProvidersIntoCache()
     {
         Cache::pull($this->service_name);
+
         if (! Cache::has($this->service_name)) 
-        {
-            $providers = ServiceProvider::select('providers.code')
-                            ->join('providers', 'service_providers.provider_id', 'providers.id')
-                            ->where('service_id', $this->serviceObject->id)
-                            ->get();
+        {   
+            $services = Service::get();
 
-            $data = [];
+            foreach($services as $service) 
+            {
+                $data=[];
 
-            foreach($providers as $provider){
-                $data[$provider->code] = ['success' => 0, 'failure' => 0, 'success_rate' => 100, 'status' => true, 'last_updated' => time(),];
-            }
-           
+                // Get Providers (goes in cache later)
+                $service_providers = ServiceProvider::where('service_id', $service->id)->get();
+
+                foreach($service_providers as $service_provider) 
+                {
+                    $data[] = [
+                        'owner' => 'INTERNAL',
+                        'code' => $service_provider->provider->code,
+                        'success' => 0, 
+                        'failure' => 0, 
+                        'success_rate' => 100, 
+                        'status' => true, 
+                        'last_updated' => time(),
+                        'provider_id' => $service_provider->provider_id,
+                        'integration_id' => $service_provider->integration_id,
+                    ];
+                }
+
+                // get all provider ids for the service.
+                $provider_id = $service_providers->pluck('provider_ids'); 
+
+                // Check client has integration to provider for that service
+                $clientInts = BusinessIntegration::select('businesses.username as business_name','providers.code as provider_code')
+                                        ->join('providers', 'business_integrations.provider_id', 'providers.id')
+                                        ->join('businesses', 'business_integrations.business_id', 'businesses.id')
+                                        ->where('business_id', $this->requestPayload['business']->id)
+                                        ->whereIn('provider_id', $provider_id)->get();
+                
+                foreach($clientInts as $ints)
+                {
+                    $data[] = [
+                        'owner' => 'CLIENT_'.$ints->business_name,
+                        'code' => $ints->provider_code,
+                        'success' => 0, 
+                        'failure' => 0, 
+                        'success_rate' => 100, 
+                        'status' => true, 
+                        'last_updated' => time(),
+                        'provider_id' => $int->provider_id,
+                        'integration_id' => $int->id,
+                    ];
+                }
+            }       
+
             Cache::put($this->service_name, $data);
         }
     }

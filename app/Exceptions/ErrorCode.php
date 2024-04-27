@@ -58,9 +58,6 @@ class ErrorCode
         'INVALID_INTEGRATION_CREDENTIAL' =>   ['code' => 'ER122', 'message'=> 'Request credential keys do not match keys in integration setup', 'http_code' => 200],
         
 
-    
-    
-
         // ADAPTER
         'INVALID_ADAPTER_PAYLOAD' => ['code' => 'ER115', 'message'=> 'Invalid Payload', 'http_code' => 200],
         'CANNOT_RESOLVE_ADAPTER' => ['code' => 'ER116', 'message'=> 'Unable to resolve adapter class', 'http_code' => 200],
@@ -74,9 +71,7 @@ class ErrorCode
         'PROVIDER_UNKNOWN_RESPONSE' =>  ['code' => 'ER110', 'message'=> 'Provider sent an unknown response', 'http_code' => 200],
         'PROVIDER_INVALID_PAYLOAD' =>   ['code' => 'ER111', 'message'=> 'Invalid payload sent to provider', 'http_code' => 200],
         
-        
-
-        
+          
     ];
 }
    

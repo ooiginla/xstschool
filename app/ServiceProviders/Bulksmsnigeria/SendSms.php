@@ -3,55 +3,24 @@
 namespace App\ServiceProviders\Bulksmsnigeria;
 
 use App\ServiceProviders\IServiceProvider;
+use App\ServiceProviders\General\BaseSendSms;
+
 
 use App\Exceptions\ErrorCode;
 use App\ServiceProviders\FinalResponseDto;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
-class SendSms extends BaseService implements IServiceProvider{
+class SendSms extends BaseSendSms implements IServiceProvider{
 
     protected $purchase_endpoint = '/sms/create';
     protected $purchase_action = 'GET';
 
     protected $status_endpoint = '/';
-    protected $status_action = 'GET';
+    protected $status_action = 'GET'; 
 
-    public function validateStatusParams()
-    {
-        $validated = true;
-        return $validated;
-    }
-
-    public function validateParams()
-    {
-        $validated = true;
-
-        if(!isset($this->standardPayload['phonenumber'])) {
-            $validated = false;
-            $this->finalResponseDto = new FinalResponseDto(false, ErrorCode::INVALID_ADAPTER_PAYLOAD, "phonenumber field is empty");
-            return $validated;
-        }
-
-        if(!isset($this->standardPayload['message'])) {
-            $validated = false;
-            $this->finalResponseDto =  new FinalResponseDto(false, ErrorCode::INVALID_ADAPTER_PAYLOAD, "message field is empty");
-            return $validated;
-        }
-
-        if(!isset($this->standardPayload['sender'])) {
-            $validated = false;
-            $this->finalResponseDto =  new FinalResponseDto(false, ErrorCode::INVALID_ADAPTER_PAYLOAD, "sender field is empty");
-            return $validated;
-        }
-
-        return $validated;
-    }
-
-    public function mapStandardToAdapterRequestStatus() 
-    {
-        $this->providerRequest['reference'] = '';
-    }
+    protected $base_url = 'https://www.bulksmsnigeria.com/api/v1';
+    protected $api_key = 'IL6sNq0fqb0jtj6vlvcMr5pT8VZavLDCzY74p89UWdE13dJ5COJndPt86LvV';
      
     public function mapStandardToAdapterRequest() 
     {

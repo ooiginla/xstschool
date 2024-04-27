@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use App\Exceptions\InternalAppException;
 use App\Exceptions\ErrorCode;
 use App\ServiceProviders\FinalResponseDto;
+use Illuminate\Support\Facades\Log;
 
 class AdapterController extends Controller
 {
@@ -23,6 +24,14 @@ class AdapterController extends Controller
 
         if(empty($request->input('service_name'))){
             return new FinalResponseDto(false, ErrorCode::INVALID_ADAPTER_PAYLOAD, "Service name field is empty");
+        }
+
+        if(empty($request->input('sa_business'))){
+            return new FinalResponseDto(false, ErrorCode::INVALID_ADAPTER_PAYLOAD, "Business field is empty");
+        }
+
+        if(empty($request->input('integration_id'))){
+            return new FinalResponseDto(false, ErrorCode::INVALID_ADAPTER_PAYLOAD, "Invalid integration code");
         }
 
         if(empty($request->input('provider_transaction_id'))){
@@ -72,6 +81,8 @@ class AdapterController extends Controller
 
             return $instance;
         }catch(\Throwable $e){
+            dd($e);
+            Log::info("Error resolving adapter class: ".$e->getMessage());
             return false;
         }
 

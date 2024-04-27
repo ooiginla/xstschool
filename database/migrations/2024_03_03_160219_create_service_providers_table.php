@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedInteger('service_id');
             $table->unsignedInteger('provider_id');
+            $table->unsignedInteger('integration_id');
             $table->float('sp_fee');
             $table->float('sp_commission');
             $table->float('sp_cap_amount')->nullable()->default(NULL);
