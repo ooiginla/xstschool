@@ -13,14 +13,13 @@ use Illuminate\Support\Facades\Log;
 
 class SendSms extends BaseSendSms implements IServiceProvider{
 
+    use Bulksmsnigeria;
+
     protected $purchase_endpoint = '/sms/create';
     protected $purchase_action = 'GET';
 
     protected $status_endpoint = '/';
     protected $status_action = 'GET'; 
-
-    protected $base_url = 'https://www.bulksmsnigeria.com/api/v1';
-    protected $api_key = 'IL6sNq0fqb0jtj6vlvcMr5pT8VZavLDCzY74p89UWdE13dJ5COJndPt86LvV';
      
     public function mapStandardToAdapterRequest() 
     {

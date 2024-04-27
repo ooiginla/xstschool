@@ -5,6 +5,7 @@ use App\Models\ProviderTransaction;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\Exceptions\ErrorCode;
+use App\Models\BusinessIntegration;
 
 class BaseServiceProvider {
 
@@ -35,9 +36,33 @@ class BaseServiceProvider {
         return $this->additionalHeaders;
     }
 
-    public function getApiKey() {
-        return $this->api_key;
+    public function getProvider(){
+        return  Provider::where('code', $this->provider_code)->first();
+     }
+ 
+     public function getBusiness(){
+         return Businss::where('username',$this->standardPayload['sa_business'])->first();
+     }
+ 
+     public function getApiKey() {
+         return $this->credentials->public_api_key;
+     }
+ 
+    public function getPrivateKey() {
+       return $this->credentials->private_api_key;
     }
+
+    public function getUsername() {
+        return $this->credentials->username;
+     }
+ 
+    public function getPassword() {
+       return $this->credentials->password;
+    }
+ 
+     public function getCallbackUrl() {
+       return $this->credentials->callback_url;
+     }
 
     public function getProviderTransactionStatus() {
         return $this->providerTransactionStatus;
@@ -142,6 +167,10 @@ class BaseServiceProvider {
         return true;
     }
 
+    public function setCredentials(){
+        $this->credentials = BusinessIntegration::where('id', $this->standardPayload['integration_id'])->first();
+    }
+
     public function init()
     {
 
@@ -152,6 +181,8 @@ class BaseServiceProvider {
         $this->standardPayload = $standardPayload;
 
         $this->loadProviderTransaction();
+        $this->init();
+        $this->setCredentials();
 
         if (empty($this->providerTransaction)) {
             $this->finalResponseDto =  new FinalResponseDto(false, ErrorCode::CANNOT_SEE_PROVIDER_TRANSACTION, "Unable to see logged provider transaction");
@@ -163,8 +194,6 @@ class BaseServiceProvider {
         if (! $action_response) {
             return $this->finalResponseDto;
         }
-
-        $this->init();
 
         $this->setAdditionalHeaders();
 

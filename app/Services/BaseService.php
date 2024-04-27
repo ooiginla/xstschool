@@ -128,6 +128,8 @@ class BaseService
         return $this->narration_prefix . '/'. $this->requestPayload['client_ref'].'/'. $this->getValueNumber();
     }
 
+    
+
     public function getCategory()
     {
         return $this->category;
@@ -166,7 +168,7 @@ class BaseService
         if ($action == Action::PURCHASE) {
             $this->loadProvidersIntoCache();
 
-            $selectedProvider = $this->chooseAdapter($this->serviceObject->name);
+            $selectedProvider = $this->chooseAdapter($this->serviceObject->name, 'Bulksmsnigeria');
 
             if (empty($selectedProvider)) {
                 throw new InternalAppException(ErrorCode::NO_PROVIDER_ACTIVE);
@@ -230,43 +232,6 @@ class BaseService
         
         try{
             /*
-            $success = [
-                'testing.com/*' => Http::response([
-                    'status' => 'SUCCESS',
-                    'response_code' => 'SUCCESSFUL',
-                    'response_message' => 'Sms Sent',
-                    'debit_business' => 'YES',
-                    'provider_raw_data'=>'a4apple',
-                    'data' => []
-                ])
-            ];
-
-            $pending = [
-                'testing.com/*' => Http::response([
-                    'status' => 'PENDING',
-                    'response_code' => 'CONNECTION_TIMEOUT',
-                    'response_message' => 'Connection Timeout',
-                    'debit_business' => 'NO',
-                    'provider_raw_data'=>'a4apple',
-                    'data' => []
-                ])
-            ];
-
-            $failure = [
-                'testing.com/*' => Http::response([
-                    'status' => 'FAILED',
-                    'response_code' => 'TRANSACTION_NOT_FOUND',
-                    'response_message' => 'Sms not sent',
-                    'debit_business' => 'NO',
-                    'provider_raw_data'=>'a4apple',
-                    'data' => []
-                ])
-            ];
-
-            $adapterResponse = Http::fake($success, 200, ['Headers'])
-                                ->acceptJson()
-                                ->withToken($this->getToken())
-                                ->post($endpoint, $this->adapterRequestDto);
             
                 DELETE FROM wallet_transactions;
                 DELETE FROM transactions;
@@ -487,10 +452,21 @@ class BaseService
         return config('app.env'). '_' . '4d66a5b1-0b25-4248-b833-50396d19aab2';
     }
 
-    public function chooseAdapter($service_name, $retry = false)
+    public function chooseAdapter($service_name, $default_provider = false, $retry = false)
     {   
         // Get all integration owners of the service
         $providers = Cache::get($this->service_name);
+
+        if($default_provider) 
+        {
+            $selected_provider = array_filter($providers, function ($k) use ($default_provider) {
+                return (str_starts_with($k['code'], $default_provider));
+            });
+
+            if(! empty($selected_provider)){
+                return $selected_provider[0];
+            }
+        }
 
         // internal_providers
         $internal_providers = array_filter($providers, function ($k){
