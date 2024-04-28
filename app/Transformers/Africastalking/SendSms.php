@@ -77,7 +77,12 @@ class SendSms extends BaseTransformer implements ITransformer
 
       $payload = $response->getOriginalContent();
       
-      $txnstatus =  $payload['data']['transaction_status'];
+      if (!$payload['status']) {
+         $msg = $payload['message'];
+         $final_data = [];
+      }
+      
+      $txnstatus =  $payload['data']['transaction_status'] ?? null;
       $httpcode = 201;
 
       $randProvRef = $this->generateRandomString(32,true,true);
@@ -118,7 +123,12 @@ class SendSms extends BaseTransformer implements ITransformer
 
       $data = [];
       $data['SMSMessageData']['Message'] = $msg;
-      $data['SMSMessageData']['Recipients'][] = $final_data;
+      
+      if (!empty($final_data)) {
+         $data['SMSMessageData']['Recipients'][] = $final_data;
+      }else{
+         $data['SMSMessageData']['Recipients'] = [];
+      }
 
       return  response()->json($data, $httpcode);
    }   

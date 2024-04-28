@@ -20,6 +20,8 @@ class SmsController extends Controller
             'client_ref' => 'required'
         ]);
 
+        throw new InternalAppException(ErrorCode::GOLIVE_NOT_ENABLED);
+        
         $data = $request->all();
 
         $finalResponseDto =  $smsService->process($data, $apiRequestDto);
@@ -40,6 +42,8 @@ class SmsController extends Controller
         $request = $transformer->authenticate($request);
 
         $standardReqest = $transformer->transformPurchaseRequest($request);
+
+        $request->merge(['transformer'=>$classpath]);
 
         // call Standard controller
         $response = $this->send($standardReqest, $apiRequestDto,$smsService);

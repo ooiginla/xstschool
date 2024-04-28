@@ -29,12 +29,24 @@ class InternalAppException extends Exception
         // ...
     }
  
-
     public function render(Request $request): JsonResponse
     {
         if ($request->is('api/*') || $request->ajax()) 
         {
             $error_key = $this->getMessage();
+            
+            if ($request->has('transformer')) {
+                $classpath = $request->transformer;
+
+                $transformer = new $classpath();
+
+                return $transformer->transformPurchaseResponse(response()->json([
+                    'status' => false,
+                    'code' => $this->getInternalCode($error_key),
+                    'message' => $this->getInternalMessage($error_key),
+                    'data' => []
+                ], $this->getInternalHttpCode($error_key)));
+            }
 
             return response()->json([
                 'status' => false,
@@ -48,15 +60,14 @@ class InternalAppException extends Exception
     }
 
     public function getInternalCode($error_key){
-        return $this->error_codes[$error_key]['message'];
+        return $this->error_codes[$error_key]['code'];
     }
 
     public function getInternalMessage($error_key){
-        return $this->error_codes[$error_key]['code'];
+        return $this->error_codes[$error_key]['message'];
     }
 
     public function getInternalHttpCode($error_key){
         return $this->error_codes[$error_key]['http_code'];
     }
-
 }

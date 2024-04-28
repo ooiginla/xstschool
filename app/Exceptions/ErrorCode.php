@@ -70,8 +70,6 @@ class ErrorCode
         'PROVIDER_ERROR' =>             ['code' => 'ER109', 'message'=> 'Error on provider', 'http_code' => 200],
         'PROVIDER_UNKNOWN_RESPONSE' =>  ['code' => 'ER110', 'message'=> 'Provider sent an unknown response', 'http_code' => 200],
         'PROVIDER_INVALID_PAYLOAD' =>   ['code' => 'ER111', 'message'=> 'Invalid payload sent to provider', 'http_code' => 200],
-        
-          
     ];
 }
    
