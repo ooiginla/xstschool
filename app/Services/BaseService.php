@@ -128,8 +128,6 @@ class BaseService
         return $this->narration_prefix . '/'. $this->requestPayload['client_ref'].'/'. $this->getValueNumber();
     }
 
-    
-
     public function getCategory()
     {
         return $this->category;
