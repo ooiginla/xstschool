@@ -138,18 +138,7 @@ class BaseServiceProvider {
 
     public function mapAdapterResponseToStandard($response) 
     {
-        if($response->successful()) 
-        {
-            $this->handleSuccessResponse($response);
-        }else if (
-            $response->requestTimeout() ||          // 408 Request Timeout
-            $response->conflict() ||                // 409 Conflict
-            $response->tooManyRequests()         // 429 Too Many Requests 
-        ){
-            $this->handlePendingResponse($response);
-        }else{
-            $this->handleFailedResponse($response);
-        }
+        // 
     }
 
     public function get_status()
@@ -225,6 +214,18 @@ class BaseServiceProvider {
 
     public function callClient($verb, $endpoint) 
     {
+
+        if(isset($this->standardPayload['mock_response'])) 
+        {
+            $return_value = match ($this->standardPayload['mock_response']) {
+                'success' => $this->mockSuccessRequest(),
+                'failed' =>  $this->mockFailedRequest(),
+                'pending' => $this->mockPendingRequest(),
+            };
+
+            return $return_value;
+        }
+
         $httpReq = Http::acceptJson()->withHeaders($this->getAdditionalHeaders());
 
         $fullUrl = $this->getBaseUrl() . $endpoint;

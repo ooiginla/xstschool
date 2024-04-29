@@ -56,7 +56,6 @@ class ErrorCode
         'TRANSFORMER_NOT_FOUND' =>   ['code' => 'ER120', 'message'=> 'Unable to find request transformer', 'http_code' => 200],
         'NO_INTEGRATION_CONFIGURATION' =>   ['code' => 'ER121', 'message'=> 'You are yet to setup your integration credential', 'http_code' => 200],
         'INVALID_INTEGRATION_CREDENTIAL' =>   ['code' => 'ER122', 'message'=> 'Request credential keys do not match keys in integration setup', 'http_code' => 200],
-        
 
         // ADAPTER
         'INVALID_ADAPTER_PAYLOAD' => ['code' => 'ER115', 'message'=> 'Invalid Payload', 'http_code' => 200],

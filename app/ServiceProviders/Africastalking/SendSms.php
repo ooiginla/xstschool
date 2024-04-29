@@ -12,7 +12,8 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use App\ServiceProviders\Africastalking\Africastalking;
 
-class SendSms extends BaseSendSms implements IServiceProvider {
+class SendSms extends BaseSendSms implements IServiceProvider 
+{
 
     use Africastalking;
  
@@ -47,17 +48,9 @@ class SendSms extends BaseSendSms implements IServiceProvider {
 
     public function handleSuccessResponse($response) 
     {
-        $data = $response->json();
-
-        if(isset($data['SMSMessageData']) && isset($data['SMSMessageData']['Recipients']) && $data['SMSMessageData']['Recipients'] > 0 && 
-                    in_array($data['SMSMessageData']['Recipients'][0]['statusCode'], ["101","102","103"])) {
-
-            $this->finalResponseDto = new FinalResponseDto(true, ErrorCode::SUCCESSFUL, "Sms successfully sent");
-            $this->finalResponseDto->debit_business = IServiceProvider::DEBIT_BUSINESS;
-            $this->finalResponseDto->status = IServiceProvider::TRANSACTION_SUCCESSFUL;
-        }else{
-            $this->handleFailedResponse($response);
-        }
+        $this->finalResponseDto = new FinalResponseDto(true, ErrorCode::SUCCESSFUL, "Sms successfully sent");
+        $this->finalResponseDto->debit_business = IServiceProvider::DEBIT_BUSINESS;
+        $this->finalResponseDto->status = IServiceProvider::TRANSACTION_SUCCESSFUL;
     }
 
     public function handlePendingResponse($response) 
@@ -81,13 +74,24 @@ class SendSms extends BaseSendSms implements IServiceProvider {
             $data = $response->json();
 
             if(isset($data['SMSMessageData']) && isset($data['SMSMessageData']['Recipients']) &&  $data['SMSMessageData']['Recipients'] > 0 && 
-                        in_array($data['SMSMessageData']['Recipients'][0]['statusCode'], ["101","102","103"])) {
+                        in_array($data['SMSMessageData']['Recipients'][0]['statusCode'], ["101","102","103"])) 
+            {
                 $this->setProviderTransactionStatus('SUCCESS');
+                $this->handleSuccessResponse($response);
             }else{
                 $this->setProviderTransactionStatus('FAILED');
+                $this->handleFailedResponse($response);
             }
+        }else if (
+            $response->requestTimeout() ||          // 408 Request Timeout
+            $response->conflict() ||                // 409 Conflict
+            $response->tooManyRequests()            // 429 Too Many Requests 
+        ){
+            $this->handlePendingResponse($response);
         }else{
+            // 500 ??
             $this->setProviderTransactionStatus('FAILED');
+            $this->handleFailedResponse($response);
         }
     }
 
@@ -111,10 +115,12 @@ class SendSms extends BaseSendSms implements IServiceProvider {
             $return_value = match ($this->standardPayload['mock_response']) {
                 'success' => $this->mockSuccessRequest(),
                 'failed' =>  $this->mockFailedRequest(),
+                'pending' => $this->mockPendingRequest(),
             };
 
             return $return_value;
         }
+
         $httpReq = Http::acceptJson()
                         ->asForm()
                         ->withHeaders($this->getAdditionalHeaders())
@@ -159,7 +165,7 @@ class SendSms extends BaseSendSms implements IServiceProvider {
                     ->post('https://google.com', []);
     }
 
-    public function  mockFailedRequest                       ()
+    public function  mockFailedRequest()
     {
         return  Http::fake(['*' => Http::response([
                     'status' => 'FAILED',
@@ -191,7 +197,6 @@ class SendSms extends BaseSendSms implements IServiceProvider {
     {
         return Http::fake($success, 200, ['Headers'])
                     ->acceptJson()
-                    ->withToken($this->getToken())
-                    ->post($endpoint, $this->adapterRequestDto);
+                    ->post($endpoint, []);
     }
 }

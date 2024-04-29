@@ -166,7 +166,7 @@ class BaseService
         if ($action == Action::PURCHASE) {
             $this->loadProvidersIntoCache();
 
-            $selectedProvider = $this->chooseAdapter($this->serviceObject->name, 'Bulksmsnigeria');
+            $selectedProvider = $this->chooseAdapter($this->serviceObject->name, 'Termii');
 
             if (empty($selectedProvider)) {
                 throw new InternalAppException(ErrorCode::NO_PROVIDER_ACTIVE);
@@ -177,7 +177,7 @@ class BaseService
             $this->adapterRequestDto['integration_id'] = $selectedProvider['integration_id'];
             $this->adapterRequestDto['service_name'] = $this->serviceObject->name;
             $this->adapterRequestDto['sa_business'] =  $this->requestPayload['business']->username;
-            $this->adapterRequestDto['mock_response'] =  'failed';
+            // $this->adapterRequestDto['mock_response'] =  'failed';
 
              // Log provider request
             $providerTxn = $this->logProviderRequest(
@@ -461,10 +461,11 @@ class BaseService
                 return (str_starts_with($k['code'], $default_provider));
             });
 
-            if(! empty($selected_provider)){
-                return $selected_provider[0];
+            if(! empty($selected_provider)) {
+                return array_values($selected_provider)[0];
             }
         }
+        
 
         // internal_providers
         $internal_providers = array_filter($providers, function ($k){

@@ -19,8 +19,6 @@ class SmsController extends Controller
             'message' => 'required',
             'client_ref' => 'required'
         ]);
-
-        throw new InternalAppException(ErrorCode::GOLIVE_NOT_ENABLED);
         
         $data = $request->all();
 
@@ -39,11 +37,11 @@ class SmsController extends Controller
             throw new InternalAppException(ErrorCode::TRANSFORMER_NOT_FOUND);
         }
 
+        $request->merge(['transformer'=>$classpath]);
+
         $request = $transformer->authenticate($request);
 
         $standardReqest = $transformer->transformPurchaseRequest($request);
-
-        $request->merge(['transformer'=>$classpath]);
 
         // call Standard controller
         $response = $this->send($standardReqest, $apiRequestDto,$smsService);

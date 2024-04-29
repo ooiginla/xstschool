@@ -56,8 +56,16 @@ class SendSms extends BaseSendSms implements IServiceProvider{
     {
         if($response->successful()){
             $this->setProviderTransactionStatus('SUCCESS');
+            $this->handleSuccessResponse($response);
+        }else if (
+            $response->requestTimeout() ||          // 408 Request Timeout
+            $response->conflict() ||                // 409 Conflict
+            $response->tooManyRequests()            // 429 Too Many Requests 
+        ){
+            $this->handlePendingResponse($response);
         }else{
             $this->setProviderTransactionStatus('FAILED');
+            $this->handleSuccessResponse($response);
         }
     }
 

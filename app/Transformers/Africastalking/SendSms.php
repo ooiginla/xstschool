@@ -77,6 +77,7 @@ class SendSms extends BaseTransformer implements ITransformer
 
       $payload = $response->getOriginalContent();
       
+      // Exceptions
       if (!$payload['status']) {
          $msg = $payload['message'];
          $final_data = [];

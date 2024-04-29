@@ -46,12 +46,9 @@ class AuthenticateBusiness
         }
 
         // IP check
-
                
         $request->merge(['business' => $business]);
 
         return $next($request);
     }
-
-    
 }
