@@ -54,7 +54,7 @@ class SendSms extends BaseSendSms implements IServiceProvider{
             $message = $data['message'] ?? 'Sms failed';
         }
 
-        $this->finalResponseDto = new FinalResponseDto(true, ErrorCode::PROVIDER_FAILED_TRANSACTION, $message);
+        $this->finalResponseDto = new FinalResponseDto(true, ErrorCode::REQUEST_PROCESSING, $message);
         $this->finalResponseDto->debit_business = IServiceProvider::DO_NOT_DEBIT;
         $this->finalResponseDto->status = IServiceProvider::TRANSACTION_FAILED;
     }  

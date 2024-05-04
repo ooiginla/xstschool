@@ -177,7 +177,6 @@ class BaseService
             $this->adapterRequestDto['integration_id'] = $selectedProvider['integration_id'];
             $this->adapterRequestDto['service_name'] = $this->serviceObject->name;
             $this->adapterRequestDto['sa_business'] =  $this->requestPayload['business']->username;
-            // $this->adapterRequestDto['mock_response'] =  'failed';
 
              // Log provider request
             $providerTxn = $this->logProviderRequest(

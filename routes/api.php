@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\SmsController;
+use App\Http\Controllers\MoneyTransferController;
 use App\Http\Controllers\GeneralController;
 use App\Http\Controllers\AdapterController;
 /*
@@ -28,6 +29,7 @@ Route::prefix('v1/adapters')->group(function(){
 Route::prefix('v1/transformers')->group(function()
 {
     Route::any('{provider}/notifications/sms/send', [SmsController::class, 'transform'])->name('sms.send.transform');
+    Route::any('{provider}/disbursements/moneytransfer/send', [SmsController::class, 'transform'])->name('moneytransfer.send.transform');
 });
 
 Route::prefix('v1')->middleware('app.api.auth')->group(function () 
@@ -38,6 +40,10 @@ Route::prefix('v1')->middleware('app.api.auth')->group(function ()
 
     Route::prefix('notifications')->group(function() {
         Route::post('/sms/send', [SmsController::class, 'send'])->name('sms.send');
+    });
+
+    Route::prefix('disbursements')->group(function() {
+        Route::post('/moneytransfer/send', [MoneyTransferController::class, 'send'])->name('moneytransfer.send');
     });
 
     Route::prefix('transactions')->group(function() {

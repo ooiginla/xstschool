@@ -78,6 +78,11 @@ class BaseServiceProvider {
         return $this->providerTransactionStatus;
     }
 
+    public function getSendingReference()
+    {
+        return $this->providerTransaction->own_reference ?? null;
+    }
+
     public function loadProviderTransaction() {
        $this->providerTransaction = ProviderTransaction::find($this->standardPayload['provider_transaction_id']);
     }

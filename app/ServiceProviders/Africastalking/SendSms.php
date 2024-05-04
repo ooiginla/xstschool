@@ -55,7 +55,7 @@ class SendSms extends BaseSendSms implements IServiceProvider
 
     public function handlePendingResponse($response) 
     {
-        $this->finalResponseDto = new FinalResponseDto(true, ErrorCode::PROVIDER_FAILED_TRANSACTION, "Sms status unknown");
+        $this->finalResponseDto = new FinalResponseDto(true, ErrorCode::REQUEST_PROCESSING, "Sms status unknown");
         $this->finalResponseDto->debit_business = IServiceProvider::DO_NOT_DEBIT;
         $this->finalResponseDto->status = IServiceProvider::TRANSACTION_PENDING;
     }
